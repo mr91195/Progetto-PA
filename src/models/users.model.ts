@@ -5,12 +5,12 @@ const sequelize: Sequelize = SingConnectionDB.getDB().getConnection();
 
 
 // Definisco un enum per le tipologie di ruolo
-enum UserRole {
+export enum UserRole {
   User = 'user',
   Admin = 'admin'
 }
 
-class User extends Model<InferAttributes<User>, InferCreationAttributes<User>>{
+export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>>{
   declare username: string;
   declare email: string;
   declare token: number;
@@ -46,7 +46,8 @@ interface IUserDAO {
     create(user: User): Promise<void>;
     retrieveAll(): Promise<User[]>;
     retrieveByEmail(email: string): Promise<User>;
-    update_token(email: string, token_: number): Promise<void>;
+    updateToken(email: string, token_: number): Promise<void>;
+    decrementToken(email: string): Promise<void>;
     delete(email: string): Promise<void>;
   }
   
@@ -54,84 +55,106 @@ interface IUserDAO {
 export class UserDAO implements IUserDAO {
 
   async create(user: User): Promise<void> {
-    try {
-      await user.save(); // Salva l'utente nel database
-    } catch (error) {
-      throw new Error("Failed to create user");
-    }
+    return user.save()
+      .then(() => {
+        console.log('User created successfully');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        throw new Error("Failed to create user");
+      });
   }
+  
 
   async retrieveAll(): Promise<User[]> {
-    try {
-      const users = await User.findAll(); // Recupera tutti gli utenti dal database
-      console.log('------------------- usr ------------------------');
-      console.log('usr : ' + JSON.stringify(users));
-      console.log('------------------- usr ------------------------');
-      return users; // Restituisce direttamente l'array di utenti
-    } catch (error) {
-      throw new Error("Failed to retrieve users");
-    }
+    return User.findAll()
+        .then((users) => {
+            return users;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            throw new Error("Failed to retrieve users");
+        });
   }
+
   
 
   async retrieveByEmail(email: string): Promise<User> {
-    try {
-
-
-      console.log('------------------- email_getUser ------------------------');
-
-      console.log('email : ' + email);
-      console.log('------------------- email ------------------------');
-
-
-      const user = await User.findByPk(email); // Recupera l'utente
-
-      console.log('------------------- usr ------------------------');
-
-      console.log('usr : ' + JSON.stringify(user));
-      console.log('------------------- usr ------------------------');
-      if (!user) {
-        throw new Error(`User with username ${email} not found`);
-      }
-      return user;
-
-    } catch (error) {
-      throw new Error("Failed to retrieve user by email");
+    return User.findByPk(email)
+        .then((user) => {
+            if (!user) {
+                throw new Error(`User with email ${email} not found`);
+            }
+            return user;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            throw new Error("Failed to retrieve user");
+        });
     }
+
+  async updateToken(email: string, tokenAdd: number): Promise<void> {
+    return User.findByPk(email)
+      .then((user) => {
+        if (!user) {
+          throw new Error(`User with email ${email} not found`);
+        }
+        // Aggiorna il token
+        user.token += tokenAdd;
+        // Salva le modifiche nel database
+        return user.save();
+      })
+      .then(() => {
+        console.log('Token updated successfully');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        throw new Error("Failed to update user token");
+      });
+  }
+  
+  async decrementToken(email: string): Promise<void> {
+    return User.findByPk(email)
+      .then((user) => {
+        if (!user) {
+          throw new Error(`User with email ${email} not found`);
+        }
+        // Decrementa il token
+        user.token -= 1;
+        // Salva le modifiche nel database
+        return user.save();
+      })
+      .then(() => {
+        console.log('Token decremented successfully');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        throw new Error("Failed to decrement user token");
+      });
   }
 
-  async update_token(email: string, token_: number): Promise<void> {
-    try {
-      // Recupera l'utente dal database
-      const user = await User.findByPk(email);
-  
-      if (!user) {
-        throw new Error(`User with username ${email} not found`);
-      }
-  
-      // Aggiorna il token
-      user.token += token_;
-  
-      // Salva le modifiche nel database
-      await user.save();
-    } catch (error) {
-      throw new Error("Failed to update user token");
-    }
-  }
 
   async delete(email: string): Promise<void> {
-    try {
-      const user = await User.findByPk(email);
-      if (!user) {
-        throw new Error(`User with username ${email} not found`);
-      }
-      // Elimina l'utente dal database
-      await user.destroy();
-    } catch (error) {
-      throw new Error("Failed to delete user");
-    }
+    return User.findByPk(email)
+      .then((user) => {
+        if (!user) {
+          throw new Error(`User with email ${email} not found`);
+        }
+        // Elimina l'utente dal database
+        return user.destroy();
+      })
+      .then(() => {
+        console.log('User deleted successfully');
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        throw new Error("Failed to delete user");
+      });
   }
+  
 }
+
+
 
 export async function getUser(email: string){
 
