@@ -24,3 +24,8 @@ services:
           - PGPORT=5432
         depends_on:
           - dbpg
+        command: npm run dev
+        volumes:
+          - ./src:/home/node/app/src
+          - ./nodemon.json:/home/node/app/nodemon.json
+        

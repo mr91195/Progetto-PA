@@ -1,0 +1,5 @@
+docker logs progetto-pa-dbpg-1 
+
+
+docker exec -it progetto-pa-dbpg-1  psql -U postgres prga
+

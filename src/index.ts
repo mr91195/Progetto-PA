@@ -1,22 +1,29 @@
 "use strict";
 
 import { createModuleResolutionCache } from "typescript";
-import {UserDAO, User, UserRole } from "./models/users.model";
+import {User, UserRole } from "./models/users.model";
+import { UserDAO } from "dao/users.dao";
+
+
 const express = require("express");
 const app = express();
 const userApp = new UserDAO();
 app.use(express.json());
 
 app.get('/usersAll', (req: any, res:any) => {
-    userApp.retrieveAll()
-    .then((userDaoAll) => {
-        res.send(userDaoAll);
-        console.log('Users finded');
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        res.status(500).send("Failed to retrieve users");  
-    });
+  userApp.retrieveAll()
+  .then((userDaoAll) => {
+      res.send(userDaoAll);
+      console.log('Users finded');
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to retrieve users");  
+  });
+});
+
+app.get('/test', (req: any, res:any) => {
+    res.send({'rotta': 'test'});
 });
 
 
