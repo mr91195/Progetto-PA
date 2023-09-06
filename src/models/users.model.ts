@@ -1,7 +1,7 @@
 import { Sequelize, Model, DataTypes, Op, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
-import { SingConnectionDB } from '../postgres/ConnectionDB';
+import { ConnectionDB } from '../postgres/connectionDB';
 
-const sequelize: Sequelize = SingConnectionDB.getDB().getConnection();
+const sequelize: Sequelize = ConnectionDB.getDB().getConnection();
 
 
 // Definisco un enum per le tipologie di ruolo

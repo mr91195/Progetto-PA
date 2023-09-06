@@ -1,7 +1,7 @@
 import { Sequelize, Model, DataTypes, HasManyGetAssociationsMixin } from 'sequelize';
-import { SingConnectionDB } from '../postgres/ConnectionDB';
+import { ConnectionDB } from '../postgres/connectionDB';
 
-const sequelize: Sequelize = SingConnectionDB.getDB().getConnection();
+const sequelize: Sequelize = ConnectionDB.getDB().getConnection();
 
 // Modello per il magazzino
 export class Magazzino extends Model {
