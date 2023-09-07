@@ -11,28 +11,44 @@ export enum StatusOrder {
 }
 
 
-export class Order extends Model<InferAttributes<Order>, InferCreationAttributes<Order>> {
-  declare orderId: number;
-  declare uuid: string;
-  declare requestOrder: FoodItemOrder[];
-  declare loadOrder: FoodItemLoad[];
-  declare timestampCreat: Date;
-  declare userCreat: string;
-  declare status: StatusOrder;
+// Definisco il modello per gli alimenti all'interno della creazione dell'ordine
+export class FoodItemOrder extends Model<InferAttributes<FoodItemOrder>, InferCreationAttributes<FoodItemOrder>> {
+  declare foodIndex: number;
+  declare food: string;
+  declare quantity: number;
 }
 
-// Definisco il modello per gli alimenti all'interno della creazione dell'ordine
-interface FoodItemOrder {
-  foodIndex: number;
-  food: string;
-  quantity: number;
-}
+FoodItemOrder.init({
+  foodIndex: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+  },
+  food: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
+}, { sequelize, tableName: 'fooditemorder' });
 
 // Definisco il modello per gli alimenti quando vengono caricati
-interface FoodItemLoad {
-  food: string;
-  quantity: number;
-  timestampLoad: Date;
+export class FoodItemLoad {
+  declare food: string;
+  declare quantity: number;
+  declare timestampLoad: Date;
+}
+
+
+export class Order extends Model<InferAttributes<Order>, InferCreationAttributes<Order>> {
+  declare orderId?: number;
+  declare uuid?: string;
+  declare requestOrder: FoodItemOrder[];
+  declare load?: FoodItemLoad[];
+  declare timestamp?: Date;
+  declare byUser: string;
+  declare status?: StatusOrder;
 }
 
 Order.init({
@@ -42,24 +58,24 @@ Order.init({
     primaryKey: true,
   },
   uuid: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4
   },
   requestOrder: {
     type: DataTypes.JSON, // Utilizza JSON per memorizzare gli alimenti per l'ordine
     allowNull: false, // non puo essere true perchè quando creo la richiesta dell'ordine va impostato la sequenza dell'ordine
   },
-  loadOrder: {
+  load: {
     type: DataTypes.JSON, // Utilizza JSON per memorizzare gli alimenti che vengono caricati
     allowNull: true, // quando viene creato l'ordine è vuoto, verrà caricato l'alimento uno per volta, con una seconda rotta
+    defaultValue: [],
   },
-  timestampCreat:{
+  timestamp:{
     type: DataTypes.DATE,
     allowNull: false,
     defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'), // Imposta il timestamp di creazione automaticamente
   },
-  userCreat: {
+  byUser: {
     type: DataTypes.STRING,
     allowNull: false
   },

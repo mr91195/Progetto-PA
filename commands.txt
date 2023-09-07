@@ -5,3 +5,11 @@ docker exec -it progetto-pa-dbpg-1  psql -U postgres prga
 
 //sudo docker run --rm --name prga -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres
 //sudo docker exec -it progx_dbpg_1 psql -U postgres prga
+
+
+SELECT * FROM "users";
+
+SELECT * FROM "orders";
+
+SELECT * FROM "store";
+

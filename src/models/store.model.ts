@@ -5,9 +5,9 @@ const sequelize: Sequelize = ConnectionDB.getDB().getConnection();
 
 // Modello per il magazzino
 export class Store extends  Model<InferAttributes<Store>, InferCreationAttributes<Store>> {
-  declare id: number;
-  declare nomeFood: string;
-  declare quantita: number;
+  declare id?: number;
+  declare food: string;
+  declare quantity: number;
 }
 
 Store.init({
@@ -16,11 +16,11 @@ Store.init({
     autoIncrement: true,
     primaryKey: true,
   },
-  nomeFood: {
+  food: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  quantita: {
+  quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },

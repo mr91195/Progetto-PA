@@ -8,6 +8,7 @@ import { UserDAO } from "dao/users.dao";
 const express = require("express");
 const app = express();
 const userApp = new UserDAO();
+
 app.use(express.json());
 
 app.get('/usersAll', (req: any, res:any) => {
@@ -113,6 +114,137 @@ app.delete('/delUser', (req: any, res: any) => {
         res.status(500).send('Failed to delete user');
         });
 });
+
+
+
+
+
+
+
+//TESTING ROTTE DAO STORE E ORDERS
+import { OrderDAO } from "dao/orders.dao";
+import { StoreDAO} from "dao/store.dao";
+import { Order , FoodItemLoad, FoodItemOrder} from "models/orders.model";
+import { Store } from "models/store.model";
+import { stringify } from "querystring";
+import { request } from "express";
+
+const orderDAO = new OrderDAO();
+const storeDAO = new StoreDAO();
+
+app.post('/store/create', async (req: any, res: any) => {
+  let storeData = req.body; // Assicurati che il body della richiesta contenga i dati dell'utente
+  //let obj = JSON.parse(req.body);
+  
+  const newStore = new Store({
+    food: storeData.food,
+    quantity: storeData.quantity
+  });
+
+
+  storeDAO.create(newStore)
+  .then(() => {
+      res.send('Added in store');
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to add in store");  
+  });
+});
+
+app.get('/store/retrieveAll', async (req: any, res: any) => {
+  storeDAO.retrieveAll()
+    .then((store) => {
+      res.json(store);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to retrieve store");
+    });
+});
+
+
+app.get('/store/retrieveByName/:food', async (req: any, res: any) => {
+  
+  let food = req.params.food;
+  storeDAO.retrieveByName(food)
+    .then((store) => {
+      res.send(store);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to retrieve food");
+    });
+});
+
+app.put('/store/update', async (req: any, res: any) => {
+  const { food, quantity } = req.body;
+
+  storeDAO.update(food, quantity)
+    .then(() => {
+      res.send('Food modified');
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to modify food");
+    });
+});
+
+app.post('/order/create', async (req: any, res: any) => {
+  let storeData = req.body;
+  let itemData = storeData.requestOrder;
+  let len = itemData.length;
+
+  let items: FoodItemOrder[] = [];
+  let index = 0 ;
+  console.log(len)
+  itemData.map( (item: any) => {
+
+    let order: FoodItemOrder = new FoodItemOrder({
+      foodIndex: index,
+      food: item.food,
+      quantity: item.quantity
+    })
+    index += 1;
+    console.log(order);
+    items.push(item);
+  });
+  console.log(items);
+
+  
+
+  const newOrder = new Order({
+    requestOrder: items, // Assegnare l'array di oggetti creato
+    byUser: storeData.byUser,
+  });
+  res.send(items);
+  
+  /*
+  orderDAO.create(newOrder)
+    .then(() => {
+      res.send(newOrder);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to create order");
+    });
+    */
+
+});
+
+
+
+app.get('/order/retrieveAll', async (req: any, res: any) => {
+  orderDAO.retrieveAll()
+    .then((orders) => {
+      res.json(orders);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to retrieve orders");
+    });
+});
+
 
 
 
