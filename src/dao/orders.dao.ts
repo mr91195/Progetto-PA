@@ -1,19 +1,64 @@
-import { Order, FoodItemLoad } from "models/orders.model";
+import { StatusOrder, Order, loadOrder, JsonRequest} from "models/orders.model";
+import { Json } from "sequelize/types/utils";
+const { v4: uuidv4 } = require('uuid');
 
 
 // Interfaccia per le operazioni CRUD su User
 interface IOrderDAO {
-    create(store: Order): Promise<void>;
+    create(orders: any, user: string, singleElement: boolean): Promise<void>;
     retrieveAll(): Promise<Order[]>;
-    retrieveById(id: number): Promise<Order>;
-    loadOrder(id:number, loadOrder: FoodItemLoad): Promise<void>;
+    retrieveById(id: string): Promise<Order>;
+    loadOrder(id: string, loadOrder: any, singleElement: boolean): Promise<void>;
+    retrieveLoadOrder(): Promise<loadOrder[]>;
   }
   
 // Classe DAO per gestire le operazioni su User
 export class OrderDAO implements IOrderDAO {
 
-  async create(order: Order): Promise<void> {
-    return order.save()
+  async create(order: any, user: string, singleElement: boolean): Promise<void> {
+
+    const uuid = uuidv4();
+    let index = 0 ;
+
+    const jsonArray: JsonRequest[] = [];
+
+
+    if(singleElement){
+      const jsonObject: JsonRequest = {
+        foodIndex: index,
+        food: order.food,
+        quantity: order.quantity,
+      };
+
+      jsonArray.push(jsonObject);
+
+      console.log('jsonArrey : ' + JSON.stringify(jsonArray))
+      console.log('jsonOBj : ' + JSON.stringify(jsonObject))
+    }
+    else{
+      order.map((item: any) => {
+        const jsonObject: JsonRequest = {
+          foodIndex: index,
+          food: item.food,
+          quantity: item.quantity,
+        };
+  
+        jsonArray.push(jsonObject);
+        index += 1;
+      });
+    }
+    
+
+    
+    let newOrder = new Order({
+      uuid: uuid,
+      request_order: jsonArray,
+      created_at: Date.now(),
+      created_by: user,
+      status: StatusOrder.Creato
+    });
+
+    return newOrder.save()
       .then(() => {
         console.log('Order created');
       })
@@ -34,10 +79,10 @@ export class OrderDAO implements IOrderDAO {
         });
   }
 
-  async retrieveById(id: number): Promise<Order> {
+  async retrieveById(id: string): Promise<Order> {
     return Order.findOne({
-      attributes: ['id'],
-      where: { orderId: id },
+      //attributes: ['uuid'],
+      where: { uuid: id },
     })
         .then((order) => {
             if (!order) {
@@ -52,20 +97,44 @@ export class OrderDAO implements IOrderDAO {
     
   }
 
-  async loadOrder(id:number, load: FoodItemLoad): Promise<void> {
+  async loadOrder(id: string, load: any, singleElement: boolean): Promise<void> {
     return this.retrieveById(id)
       .then((order) => {
         if(!order){
           throw new Error('Order not found');
         }
-        if (!order.load) {
-          order.load = [];
+        
+
+        if(singleElement){
+          
+          let item: loadOrder = new loadOrder({
+            uuid: order.uuid,
+            food: load.food,
+            quantity: load.quantity,
+            timestamp: Date.now()
+          });
+
+          console.log('jsonArrey : ' + JSON.stringify(item));
+          item.save();
         }
-        order.load.push(load);
-        return order.save();
+
+        else{
+          load.map((items: any) => {
+            let item: loadOrder = new loadOrder({
+              uuid: order.uuid, 
+              food: items.food,
+              quantity: items.quantity,
+              timestamp: Date.now(),
+            });
+      
+            console.log('jsonArrey : ' + JSON.stringify(item));
+            item.save();
+          });
+        }
+
       })
       .then(() => {
-        console.log('Order modified');
+        console.log('Loaded');
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -74,4 +143,14 @@ export class OrderDAO implements IOrderDAO {
 
   }
     
+  async retrieveLoadOrder(): Promise<loadOrder[]> {
+    return loadOrder.findAll()
+        .then((orders) => {
+            return orders;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            throw new Error("Failed to retrieve orders");
+        });
+  }
 }

@@ -4,7 +4,7 @@ CREATE DATABASE prga;
 CREATE TABLE users (
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) PRIMARY KEY,
-    token VARCHAR(255) NOT NULL,
+    token INTEGER NOT NULL,
     role VARCHAR(255) NOT NULL
 );
 
@@ -14,18 +14,22 @@ CREATE TABLE store (
     quantity INTEGER NOT NULL
 );
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+--CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE orders (
-  orderId SERIAL PRIMARY KEY,
-  uuid UUID NOT NULL DEFAULT uuid_generate_v4(),
-  requestOrder JSONB NOT NULL,
-  load JSONB,
-  timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  byUser VARCHAR(255) NOT NULL,
-  status VARCHAR(255) NOT NULL DEFAULT 'creato'
+  uuid UUID PRIMARY KEY ,
+  request_order JSON[] NOT NULL,
+  created_at TIMESTAMP NOT NULL,
+  created_by VARCHAR(255) NOT NULL,
+  status VARCHAR(255) NOT NULL 
 );
 
+CREATE TABLE load_order (
+    uuid UUID NOT NULL,
+    food VARCHAR(255) NOT NULL,
+    quantity INTEGER NOT NULL,
+    timestamp TIMESTAMP NOT NULL
+);
 
 -- Inserimento di dati di esempio nella tabella Users
 INSERT INTO users (username, email, token, role) VALUES 
@@ -36,13 +40,3 @@ INSERT INTO users (username, email, token, role) VALUES
 -- INserimento di dati di esempio nella tabella store
 INSERT INTO store (food, quantity) VALUES 
     ('frumento', 10);
-
--- Inserimento di un esempio di ordes
-INSERT INTO orders (requestOrder, byUser, status)
-VALUES (
-  '[{"foodIndex": 1, "food": "frumento", "quantity": 2}, {"foodIndex": 2, "food": "cereali", "quantity": 1}]','user1', 'creato');
-
---'[{"food": "Pasta", "quantity": 2, "timestampLoad": NOW()}]'
-
-
-

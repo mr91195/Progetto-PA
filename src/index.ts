@@ -124,7 +124,7 @@ app.delete('/delUser', (req: any, res: any) => {
 //TESTING ROTTE DAO STORE E ORDERS
 import { OrderDAO } from "dao/orders.dao";
 import { StoreDAO} from "dao/store.dao";
-import { Order , FoodItemLoad, FoodItemOrder} from "models/orders.model";
+import { Order } from "models/orders.model";
 import { Store } from "models/store.model";
 import { stringify } from "querystring";
 import { request } from "express";
@@ -191,45 +191,41 @@ app.put('/store/update', async (req: any, res: any) => {
 });
 
 app.post('/order/create', async (req: any, res: any) => {
+  
   let storeData = req.body;
   let itemData = storeData.requestOrder;
-  let len = itemData.length;
+  let user = storeData.byUser;
 
-  let items: FoodItemOrder[] = [];
-  let index = 0 ;
-  console.log(len)
-  itemData.map( (item: any) => {
 
-    let order: FoodItemOrder = new FoodItemOrder({
-      foodIndex: index,
-      food: item.food,
-      quantity: item.quantity
-    })
-    index += 1;
-    console.log(order);
-    items.push(item);
-  });
-  console.log(items);
-
-  
-
-  const newOrder = new Order({
-    requestOrder: items, // Assegnare l'array di oggetti creato
-    byUser: storeData.byUser,
-  });
-  res.send(items);
-  
-  /*
-  orderDAO.create(newOrder)
+  let flagSingleElement: boolean;
+  const numberOfElements = Object.keys(itemData).length;
+  if (numberOfElements == 1){
+    flagSingleElement = true;
+    let item = req.body.requestOrder;
+    item = item[0];
+    orderDAO.create(item, user, flagSingleElement)
     .then(() => {
-      res.send(newOrder);
+      res.send('Order created');
     })
     .catch((error) => {
       console.error('Error:', error);
       res.status(500).send("Failed to create order");
     });
-    */
-
+  }
+  else{
+    flagSingleElement = false;
+    orderDAO.create(itemData, user, flagSingleElement)
+    .then(() => {
+      res.send('Order created');
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to create order");
+    });
+  }
+  
+  
+  
 });
 
 
@@ -245,6 +241,61 @@ app.get('/order/retrieveAll', async (req: any, res: any) => {
     });
 });
 
+app.get('/order/retrieveID/:uuid', async (req: any, res: any)=> {
+  let uuid: string = req.params.uuid;
+  console.log(uuid);
+  orderDAO.retrieveById(uuid)
+  .then((order)=>{
+    res.json(order);
+  })
+  .catch((error=>{
+    console.log('Error :', error);
+    res.status(500).send('Failed to retrieve order number ');
+  }))
+} );
+
+
+app.post('/order/:uuid/load', async (req: any, res: any)=> {
+  let storeData = req.body.loadOrder;
+  let uuid = req.params.uuid;
+  let flagSingleElement: boolean;
+  const numberOfElements = Object.keys(storeData).length;
+  if (numberOfElements == 1){
+    flagSingleElement = true;
+    let item = storeData[0];
+    orderDAO.loadOrder(uuid, item, flagSingleElement)
+    .then(() => {
+      res.send('Loaded');
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to create order");
+    });
+  }
+  else{
+    flagSingleElement = false;
+    orderDAO.loadOrder(uuid, storeData, flagSingleElement)
+    .then(() => {
+      res.send('Loaded');
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to create order");
+    });
+} 
+});
+
+app.get('/order/load/retrieve', async (req: any, res: any) => {
+  orderDAO.retrieveLoadOrder()
+  .then((loadOrder) => {
+      res.json(loadOrder);
+      console.log('Load order retrieveall');
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to retrieve order loaded");  
+  });
+})
 
 
 

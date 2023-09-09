@@ -13,3 +13,20 @@ SELECT * FROM "orders";
 
 SELECT * FROM "store";
 
+
+
+CREATE TABLE cargo (
+  food VARCHAR(255) NOT NULL,
+  quantity INTEGER NOT NULL,
+  index TIMESTAMP,
+  orderId UUID REFERENCES orders(uuid)
+)
+
+-- Creazione della colonna orderId nella tabella FoodItemOrder
+CREATE TABLE fooditemorder (
+  foodIndex SERIAL PRIMARY KEY,
+  food VARCHAR(255) NOT NULL,
+  quantity INTEGER NOT NULL,
+  orderId UUID REFERENCES orders(uuid) -- Chiave esterna che fa riferimento all'ID dell'ordine
+);
+

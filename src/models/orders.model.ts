@@ -11,16 +11,55 @@ export enum StatusOrder {
 }
 
 
-// Definisco il modello per gli alimenti all'interno della creazione dell'ordine
-export class FoodItemOrder extends Model<InferAttributes<FoodItemOrder>, InferCreationAttributes<FoodItemOrder>> {
-  declare foodIndex: number;
-  declare food: string;
-  declare quantity: number;
+export interface JsonRequest {
+  foodIndex: number;
+  food: string;
+  quantity: number;
 }
 
-FoodItemOrder.init({
-  foodIndex: {
-    type: DataTypes.INTEGER,
+
+export class Order extends Model<InferAttributes<Order>, InferCreationAttributes<Order>> {
+  declare uuid: string;
+  declare request_order: JsonRequest[];
+  declare created_at: number;
+  declare created_by: string;
+  declare status: StatusOrder;
+}
+
+Order.init({
+  uuid: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+  },
+  request_order: {
+    type: DataTypes.ARRAY(DataTypes.JSON),
+    allowNull: false,
+  },
+  created_at:{
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  created_by: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  status: {
+    type: DataTypes.ENUM(StatusOrder.Creato, StatusOrder.Completato, StatusOrder.Fallito, StatusOrder.InEsecuzione),
+    allowNull: false,
+  }
+
+}, { sequelize, tableName: 'orders' });
+
+export class loadOrder extends Model{
+  declare uuid: string;
+  declare food: string;
+  declare quantity: number;
+  declare timestamp: number;
+}
+
+loadOrder.init({
+  uuid: {
+    type: DataTypes.UUID,
     primaryKey: true,
   },
   food: {
@@ -29,60 +68,11 @@ FoodItemOrder.init({
   },
   quantity: {
     type: DataTypes.INTEGER,
-    allowNull: false
-  }
-}, { sequelize, tableName: 'fooditemorder' });
-
-// Definisco il modello per gli alimenti quando vengono caricati
-export class FoodItemLoad {
-  declare food: string;
-  declare quantity: number;
-  declare timestampLoad: Date;
-}
-
-
-export class Order extends Model<InferAttributes<Order>, InferCreationAttributes<Order>> {
-  declare orderId?: number;
-  declare uuid?: string;
-  declare requestOrder: FoodItemOrder[];
-  declare load?: FoodItemLoad[];
-  declare timestamp?: Date;
-  declare byUser: string;
-  declare status?: StatusOrder;
-}
-
-Order.init({
-  orderId: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+    allowNull: false,
   },
-  uuid: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4
-  },
-  requestOrder: {
-    type: DataTypes.JSON, // Utilizza JSON per memorizzare gli alimenti per l'ordine
-    allowNull: false, // non puo essere true perchè quando creo la richiesta dell'ordine va impostato la sequenza dell'ordine
-  },
-  load: {
-    type: DataTypes.JSON, // Utilizza JSON per memorizzare gli alimenti che vengono caricati
-    allowNull: true, // quando viene creato l'ordine è vuoto, verrà caricato l'alimento uno per volta, con una seconda rotta
-    defaultValue: [],
-  },
-  timestamp:{
+  timestamp: {
     type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'), // Imposta il timestamp di creazione automaticamente
-  },
-  byUser: {
-    type: DataTypes.STRING,
     allowNull: false
-  },
-  status: {
-    type: DataTypes.ENUM(StatusOrder.Creato, StatusOrder.Completato, StatusOrder.Fallito, StatusOrder.InEsecuzione),
-    allowNull: false,
-    defaultValue: StatusOrder.Creato
   }
+}, {sequelize, tableName: 'load_order'});
 
-}, { sequelize, tableName: 'orders' });
