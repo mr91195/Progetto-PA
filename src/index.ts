@@ -3,6 +3,14 @@
 import { createModuleResolutionCache } from "typescript";
 import {User, UserRole } from "./models/users.model";
 import { UserDAO } from "dao/users.dao";
+import { jwtAuth } from "middleware/jwt.middleware";
+const jwt = require('jsonwebtoken');
+import {
+	ReasonPhrases,
+	StatusCodes,
+	getReasonPhrase,
+	getStatusCode,
+} from 'http-status-codes';
 
 
 const express = require("express");
@@ -10,6 +18,8 @@ const app = express();
 const userApp = new UserDAO();
 
 app.use(express.json());
+
+
 
 app.get('/usersAll', (req: any, res:any) => {
   userApp.retrieveAll()
@@ -23,8 +33,24 @@ app.get('/usersAll', (req: any, res:any) => {
   });
 });
 
-app.get('/test', (req: any, res:any) => {
-    res.send({'rotta': 'test'});
+app.get('/test', jwtAuth,(req: any, res:any) => {
+
+  res.send({"ROTTA": "Autenticazione effettuata correttamente","user" : req.user});
+}); 
+
+
+
+app.get('/login/:user', (req: any, res:any) => {
+  let user = req.params.user;
+  userApp.retrieveByEmail(user)
+  .then((userFind) => {
+    const key = "superSecretKeyJwt";
+    const token = jwt.sign({"email" : userFind.email,
+    "role" : userFind.role}, key);
+    res.send({"token" : token})
+      
+    })
+  
 });
 
 
@@ -296,6 +322,25 @@ app.get('/order/load/retrieve', async (req: any, res: any) => {
       res.status(500).send("Failed to retrieve order loaded");  
   });
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

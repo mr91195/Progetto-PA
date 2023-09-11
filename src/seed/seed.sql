@@ -26,6 +26,7 @@ CREATE TABLE orders (
 
 CREATE TABLE load_order (
     uuid UUID NOT NULL,
+    index INTEGER NOT NULL,
     food VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL,
     timestamp TIMESTAMP NOT NULL
@@ -33,10 +34,6 @@ CREATE TABLE load_order (
 
 -- Inserimento di dati di esempio nella tabella Users
 INSERT INTO users (username, email, token, role) VALUES 
-    ('user1','user1@genericmail.com', 17.5, 'user'),
-    ('user2','user2@genericmail.com', 12.5, 'user'),
-    ('user3','user3@genericmail.com', 0, 'user'),
-    ('admin1','admin@genericmail.com', 0, 'admin');
--- INserimento di dati di esempio nella tabella store
-INSERT INTO store (food, quantity) VALUES 
-    ('frumento', 10);
+    ('operatore1','op1@mailnator.com', 2, 'user'),
+    ('operatore2','op2@mailnator.com', 5, 'user'),
+    ('admin','admin@genericmail.com', 0, 'admin');
