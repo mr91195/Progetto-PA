@@ -34,6 +34,6 @@ CREATE TABLE load_order (
 
 -- Inserimento di dati di esempio nella tabella Users
 INSERT INTO users (username, email, token, role) VALUES 
-    ('operatore1','op1@mailnator.com', 2, 'user'),
+    ('operatore1','op1@mailnator.com', 15, 'user'),
     ('operatore2','op2@mailnator.com', 5, 'user'),
     ('admin','admin@genericmail.com', 0, 'admin');

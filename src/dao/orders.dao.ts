@@ -32,8 +32,6 @@ export class OrderDAO implements IOrderDAO {
 
       jsonArray.push(jsonObject);
 
-      console.log('jsonArrey : ' + JSON.stringify(jsonArray))
-      console.log('jsonOBj : ' + JSON.stringify(jsonObject))
     }
     else{
       order.map((item: any) => {

@@ -1,9 +1,12 @@
+import { error } from "console";
 import { Store } from "models/store.model";
 
 
 // Interfaccia per le operazioni CRUD su Store
 interface IStoreDAO {
     create(store: Store): Promise<void>;
+    isExists(name: string): Promise<boolean>;
+    isAction(food: string, quantity: number): Promise<boolean>;
     retrieveAll(): Promise<Store[]>;
     retrieveByName(food: string): Promise<Store>;
     update(food: string, quantity: number): Promise<void>;
@@ -13,6 +16,38 @@ interface IStoreDAO {
 export class StoreDAO implements IStoreDAO {
 //DEVO AGGIUNGERE IL CONTROLLO CHE SE ESISTE GIA, AGGIUNGO LA QUANTITA.
 //DEVO IMPLEMENTARE CHE TUTTI GLI INPUT DEVON ESSERE TUTTI LOWERCASE
+
+  async isAction(name: string, requestQuantity: number): Promise<boolean> {   
+    let food = await Store.findOne({
+      where: { food: name }
+    });
+    if (food){
+      let flag = food.quantity > requestQuantity ? true  : false;
+      if (flag){
+        return true;
+      }else{
+        return false;
+      }
+    }else{
+      throw new Error('quantità non specificata');
+    }
+  
+  }
+
+  async isExists(name: string): Promise<boolean>{
+        
+        let food = await Store.findOne({
+          where: { food: name }
+        });
+        if (!food){
+          return false;
+        }
+        else{
+        
+        return true;
+      }
+  }
+
 
   async create(store: Store): Promise<void> {
     return store.save()
@@ -28,6 +63,9 @@ export class StoreDAO implements IStoreDAO {
   async retrieveAll(): Promise<Store[]> {
     return Store.findAll()
         .then((store) => {
+          if (!store) {
+            throw new Error(`Store empty`);
+          }
             return store;
         })
         .catch((error) => {
@@ -54,25 +92,25 @@ export class StoreDAO implements IStoreDAO {
 
 
 
-  async update(food: string, quantity: number): Promise<void> {
-    return this.retrieveByName(food)
-      .then((food) => {
-        if (!food) {
-          throw new Error(`Food ${food} not found`);
-        }
-        // Aggiorna la quantita
-        food.quantity += quantity;
-        // Salva le modifiche nel database
-        return food.save();
-      })
-      .then(() => {
-        console.log('Food modified');
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        throw new Error("Failed to modify.");
-      });
-
+async update(food: string, quantity: number): Promise<void> {
+  let element = await this.retrieveByName(food)
+  if (element){
+    console.log({'element' : element.quantity,
+    'element type' : typeof(element.quantity),
+    'quantity' : quantity,
+    'quantity type' : typeof(quantity)
+    })
+    console.log('------------------------------------------------------update-------------------------------------------------')
+    console.log(element.quantity)
+    console.log(typeof(element.quantity))
+    element.quantity += quantity;
+    element.save();
   }
+  else{
+    console.error('Error:', error);
+    throw new Error("Failed to retrieve food");
+  }
+
+}
   
 }

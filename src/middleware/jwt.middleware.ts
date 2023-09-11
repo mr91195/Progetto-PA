@@ -1,16 +1,19 @@
 var express = require('express');
 const jwt = require('jsonwebtoken');
 require('dotenv').config
+import {
+	ReasonPhrases,
+	StatusCodes,
+	getReasonPhrase,
+	getStatusCode,
+} from 'http-status-codes';
 
-//const { isNewExpression } = require('typescript');
-var app = express();
 
-/*
-var myLogger = function (req, res, next) {
+var myLogger = function (req: any, res: any, next: any) {
   console.log('LOGGED');
   next();
 };
-*/
+
 
 
 let requestTime = function (req: any, res: any, next: any) {
@@ -25,7 +28,7 @@ let checkHeader = function(req: any, res: any, next: any){
         next();
     }else{
         next();
-        res.status(400).send({'err' : 'No auth header'})
+        res.status(StatusCodes.BAD_REQUEST).send({'err' : 'No auth header'})
     }
 };
 
@@ -36,7 +39,9 @@ function checkToken(req: any, res: any, next: any){
       req.token=bearerToken;
       next();
   }else{
-      res.sendStatus(403);
+      res
+      .status(StatusCodes.UNAUTHORIZED)
+      .send({'err' : 'Errore nella verifica del token!!'});
   }
 }
 
@@ -57,13 +62,5 @@ function errorHandler(req: any, res: any, next: any) {
 }
 */
   
-export const jwtAuth = [requestTime, checkToken, verifyAndAuthenticate];
+export const jwtAuth = [requestTime, checkToken, verifyAndAuthenticate, myLogger];
 
-/*
-app.use(myLogger);
-app.use(requestTime);
-app.use(checkToken);
-app.use(verifyAndAuthenticate);
-app.use(logErrors);
-app.use(errorHandler);
-*/

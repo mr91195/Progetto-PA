@@ -11,6 +11,20 @@ import {
 	getReasonPhrase,
 	getStatusCode,
 } from 'http-status-codes';
+import { OrderDAO } from "dao/orders.dao";
+import { StoreDAO} from "dao/store.dao";
+import { Order } from "models/orders.model";
+import { Store } from "models/store.model";
+import { stringify } from "querystring";
+import { request } from "express";
+import * as mdlSchema from "./middleware/schema.middleware";
+import * as mdlStore from "./middleware/store-order.middleware";
+import * as controlStore from './service/store.controller';
+import * as controlOrder from './service/order.controller';
+import * as mdlUser from './middleware/user.middleware';
+import * as mdlOrder from './middleware/store-order.middleware';
+const orderDAO = new OrderDAO();
+const storeDAO = new StoreDAO();
 
 
 const express = require("express");
@@ -18,6 +32,47 @@ const app = express();
 const userApp = new UserDAO();
 
 app.use(express.json());
+
+
+
+// Crea ALIMENTO
+app.post('/store/create', 
+  [jwtAuth, mdlUser.checkUserTokenAmount, mdlSchema.validateCreateStore], 
+  async (req: any, res: any) => {
+
+    await controlStore.createFood(req, res);
+    await userApp.decrementToken(req.user.email);
+
+});
+
+
+// CREA ORDINE
+app.post('/order/create', 
+  [jwtAuth, mdlUser.checkUserTokenAmount, mdlSchema.validateCreateOrder, mdlOrder.checkFood, mdlOrder.checkQuantity],
+  async (req: any, res: any) => {
+    await controlOrder.createOrder(req, res);
+    await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
+    await userApp.decrementToken(req.user.email);
+
+});
+
+
+// 1
+// PRESO IN CARICO -> IN ESECUZIONE
+
+// 2
+// CARICAMENTO ORDINE 
+//RISPETTARE SEQUENZA DI CARICO
+// QUANTITA DA CARICARE DISCSTA DI UNA PERCENTUALE CON LA RICHIESTA
+// ALLORA IMPOSTA STATO IN -> COMPLETATO
+//await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
+
+// 3
+//MOSTRA STATO DELL'ORDINE 
+
+
+// 4
+// ROTTA LIBERA
 
 
 
@@ -33,7 +88,7 @@ app.get('/usersAll', (req: any, res:any) => {
   });
 });
 
-app.get('/test', jwtAuth,(req: any, res:any) => {
+app.get('/test', jwtAuth ,(req: any, res:any) => {
 
   res.send({"ROTTA": "Autenticazione effettuata correttamente","user" : req.user});
 }); 
@@ -148,35 +203,7 @@ app.delete('/delUser', (req: any, res: any) => {
 
 
 //TESTING ROTTE DAO STORE E ORDERS
-import { OrderDAO } from "dao/orders.dao";
-import { StoreDAO} from "dao/store.dao";
-import { Order } from "models/orders.model";
-import { Store } from "models/store.model";
-import { stringify } from "querystring";
-import { request } from "express";
 
-const orderDAO = new OrderDAO();
-const storeDAO = new StoreDAO();
-
-app.post('/store/create', async (req: any, res: any) => {
-  let storeData = req.body; // Assicurati che il body della richiesta contenga i dati dell'utente
-  //let obj = JSON.parse(req.body);
-  
-  const newStore = new Store({
-    food: storeData.food,
-    quantity: storeData.quantity
-  });
-
-
-  storeDAO.create(newStore)
-  .then(() => {
-      res.send('Added in store');
-  })
-  .catch((error) => {
-      console.error('Error:', error);
-      res.status(500).send("Failed to add in store");  
-  });
-});
 
 app.get('/store/retrieveAll', async (req: any, res: any) => {
   storeDAO.retrieveAll()
@@ -199,7 +226,7 @@ app.get('/store/retrieveByName/:food', async (req: any, res: any) => {
     })
     .catch((error) => {
       console.error('Error:', error);
-      res.status(500).send("Failed to retrieve food");
+      res.status(500).send("Elemento non trovato");
     });
 });
 
@@ -216,43 +243,6 @@ app.put('/store/update', async (req: any, res: any) => {
     });
 });
 
-app.post('/order/create', async (req: any, res: any) => {
-  
-  let storeData = req.body;
-  let itemData = storeData.requestOrder;
-  let user = storeData.byUser;
-
-
-  let flagSingleElement: boolean;
-  const numberOfElements = Object.keys(itemData).length;
-  if (numberOfElements == 1){
-    flagSingleElement = true;
-    let item = req.body.requestOrder;
-    item = item[0];
-    orderDAO.create(item, user, flagSingleElement)
-    .then(() => {
-      res.send('Order created');
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      res.status(500).send("Failed to create order");
-    });
-  }
-  else{
-    flagSingleElement = false;
-    orderDAO.create(itemData, user, flagSingleElement)
-    .then(() => {
-      res.send('Order created');
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-      res.status(500).send("Failed to create order");
-    });
-  }
-  
-  
-  
-});
 
 
 
