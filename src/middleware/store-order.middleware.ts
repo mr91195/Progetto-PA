@@ -28,6 +28,8 @@ export async function checkFood(req: any, res: any, next: any){
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'elemeno non presente'});
+                }else{
+                    next();
                 }
             //res.send(store);
             })
@@ -37,12 +39,13 @@ export async function checkFood(req: any, res: any, next: any){
                 .send({ 'err': error});
             });
 
-            next();
     }else{
+        let flag: boolean = true;
         item.map(async (items: any) => {
             await storeDAO.isExists(items.food)
             .then((store) => {
                 if(!store){
+                    flag = false;
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'elemeno non presente'});
@@ -55,8 +58,9 @@ export async function checkFood(req: any, res: any, next: any){
                 .send({ 'err': error});
             });
         })
-
-        next();
+        if(flag){
+            next();
+        }
     }
 }
 
@@ -91,6 +95,8 @@ export async function checkQuantity(req: any, res: any, next: any){
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'quantità non presente nello store'});
+                }else{
+                    next();
                 }
             //res.send(store);
             })
@@ -100,26 +106,34 @@ export async function checkQuantity(req: any, res: any, next: any){
                 .send({ 'err': error});
             });
 
-            next();
     }else{
-        item.map(async (items: any) => {
-            await storeDAO.isAction(items.food, items.quantity)
-            .then((store) => {
-                if(!store){
-                    res
-                    .status(StatusCodes.NOT_FOUND)
-                    .send({'err':'quantità non presente nello store'});
-                }
-            //res.send(store);
+        const promises = item.map(async (items: any) => {
+            try {
+              const store = await storeDAO.isAction(items.food, items.quantity);
+              if (!store) {
+                res.status(StatusCodes.NOT_FOUND).send({ 'err': 'quantità non presente nello store' });
+                return false; // Ritorna false se la chiamata non ha avuto successo
+              }
+              return true; // Ritorna true se la chiamata ha avuto successo
+            } catch (error) {
+              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 'err': error });
+              return false; // Ritorna false se si è verificato un errore
+            }
+          });
+          
+          Promise.all(promises)
+            .then((results) => {
+              // Controlla se tutti gli elementi dell'array sono true
+              if (results.every((result) => result === true)) {
+                // Tutte le chiamate sono state riuscite, chiamiamo next()
+                next();
+              }
             })
             .catch((error) => {
-                res
-                .status(StatusCodes.INTERNAL_SERVER_ERROR)
-                .send({ 'err': error});
+              // Gestisci eventuali errori in Promise.all
+              console.error('Errore in Promise.all:', error);
             });
-        })
 
-        next();
     }    
 }
 interface arraySequence {
@@ -127,7 +141,7 @@ interface arraySequence {
     food: string;
   }
 
-function sonoArrayUgualiConScostamento(
+function isEquals(
     arr1: arraySequence[],
     arr2: arraySequence[],
     percentualeMassima: number
@@ -229,7 +243,7 @@ export async function checkSequence(req: any, res: any, next: any){
         
         let percentage: number = Number(process.env.PERCENTAGE);
         
-        const sonoUguali: boolean = sonoArrayUgualiConScostamento(arrayOrder, arrayLoad, percentage);
+        const sonoUguali: boolean = isEquals(arrayOrder, arrayLoad, percentage);
         if(sonoUguali){
             next();
         }else{
@@ -270,24 +284,32 @@ export async function checkLoad(req: any, res: any, next: any){
 
             next();
     }else{
-        item.map(async (items: any) => {
-            await storeDAO.isExists(items.food)
-            .then((store) => {
-                if(!store){
-                    res
-                    .status(StatusCodes.NOT_FOUND)
-                    .send({'err':'elemeno non presente'});
-                }
-            //res.send(store);
+        const promises = item.map(async (items: any) => {
+            try {
+              const store = await storeDAO.isExists(items.food);
+              if (!store) {
+                res.status(StatusCodes.NOT_FOUND).send({ 'err': 'quantità non presente nello store' });
+                return false; // Ritorna false se la chiamata non ha avuto successo
+              }
+              return true; // Ritorna true se la chiamata ha avuto successo
+            } catch (error) {
+              res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 'err': error });
+              return false; // Ritorna false se si è verificato un errore
+            }
+          });
+          
+          Promise.all(promises)
+            .then((results) => {
+              // Controlla se tutti gli elementi dell'array sono true
+              if (results.every((result) => result === true)) {
+                // Tutte le chiamate sono state riuscite, chiamiamo next()
+                next();
+              }
             })
             .catch((error) => {
-                res
-                .status(StatusCodes.INTERNAL_SERVER_ERROR)
-                .send({ 'err': error});
+              // Gestisci eventuali errori in Promise.all
+              console.error('Errore in Promise.all:', error);
             });
-        })
-
-        next();
     }
 }
 

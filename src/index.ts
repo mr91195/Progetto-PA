@@ -86,6 +86,7 @@ app.post('/order/:uuid/load',
     mdlOrder.checkSequence
     ],
   async (req:any, res: any) => {
+    await controlOrder.consumeStore(req, res);
     res.send('ok')
   }
 
@@ -293,7 +294,7 @@ app.get('/order/retrieveID/:uuid', async (req: any, res: any)=> {
   }))
 } );
 
-
+/*
 app.post('/order/:uuid/load', async (req: any, res: any)=> {
   let storeData = req.body.loadOrder;
   let uuid = req.params.uuid;
@@ -323,7 +324,7 @@ app.post('/order/:uuid/load', async (req: any, res: any)=> {
     });
 } 
 });
-
+*/
 app.get('/order/load/retrieve', async (req: any, res: any) => {
   orderDAO.retrieveLoadOrder()
   .then((loadOrder) => {

@@ -26,10 +26,9 @@ CREATE TABLE orders (
 
 CREATE TABLE load_order (
     uuid UUID NOT NULL,
-    foodIndex INTEGER NOT NULL,
     food VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
+    timestamp VARCHAR(255) NOT NULL,
     deviation INTEGER NOT NULL
 );
 

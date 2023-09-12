@@ -49,8 +49,139 @@ export async function createOrder(req: any, res: any) {
     }
 }
 
+
+export async function orderStart(req: any, res: any, next: any){
+
+    let uuid : string = req.params.uuid;
+    console.log('-------------------------------orderStart----------------------------------------')
+    console.log(uuid);
+    await orderDAO.changeStatus(StatusOrder.InEsecuzione, uuid)
+    .then(() => {
+        res.send({'msg' : 'l ordine è stato processato correttamente, stato ordine : IN ESECUZIONE'});
+        next();
+        //res.send(store);
+    })
+    .catch((error) => {
+        res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({ 'err': 'ordine non presente'});
+    });
+}
+
+function padTo2Digits(num: number) {
+    return num.toString().padStart(2, '0');
+  }
+  
+function convertMsToTime(milliseconds: number) {
+let seconds = Math.floor(milliseconds / 1000);
+let minutes = Math.floor(seconds / 60);
+const hours = Math.floor(minutes / 60);
+
+seconds = seconds % 60;
+minutes = minutes % 60;
+
+// 👇️ If you want to roll hours over, e.g. 00 to 24
+// 👇️ uncomment the line below
+// uncommenting next line gets you `00:00:00` instead of `24:00:00`
+// or `12:15:31` instead of `36:15:31`, etc.
+// 👇️ (roll hours over)
+// hours = hours % 24;
+
+return `${padTo2Digits(hours)}:${padTo2Digits(minutes)}:${padTo2Digits(
+    seconds,
+)}`;
+}
+/*
+    uuid UUID NOT NULL,
+    foodIndex INTEGER NOT NULL,
+    food VARCHAR(255) NOT NULL,
+    quantity INTEGER NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    deviation INTEGER NOT NULL*/
+export async function consumeStore(req: any, res: any){
+    let storeData = req.body.loadOrder;
+    let uuid = req.params.uuid;
+    const numberOfElements = Object.keys(storeData).length;
+    if (numberOfElements == 1){
+        let isSingleElement: boolean = true;
+        let item = storeData[0];
+        let order = await orderDAO.retrieveById(uuid);
+        if(order){
+            let request = order.request_order[0];
+            let tmp: number = new Date().getTime() - new Date(order.created_at).getTime();
+            let timestamp: string = convertMsToTime(tmp);
+            
+            console.log('------------------------------------------------timestamp------------------------------');
+            console.log(tmp);
+            console.log('---------------------------------------time-------------------------------------');
+            console.log(timestamp)
+            let food : string = item.food;
+            let quantity: number = parseInt(item.quantity.toString());
+
+
+            let rqsQnt: number = parseInt(request.quantity.toString());
+            let deviation: number = rqsQnt - quantity;
+
+            await orderDAO.loadOrder(uuid, timestamp, food, quantity, deviation)
+                .then(()=>{
+                    res.send({'msg' : 'Caricamento andato a buon fine!'})
+                })
+                .catch(()=>{
+                    res
+                    .status(StatusCodes.NOT_ACCEPTABLE)
+                    .send({'err' : 'errore nel caricamento dell ordine'});
+                })
+
+        }else{
+            res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send({'err' : 'Problema nel caricamento degli alimenti'});
+        }
+    }
+    else{
+        let order = await orderDAO.retrieveById(uuid);
+        if(order){
+            let index : number = 0;
+            storeData.map(async (items: any) => {
+                let request = order.request_order[index];
+                let tmp: number = new Date().getTime() - new Date(order.created_at).getTime();
+                let timestamp: string = convertMsToTime(tmp);
+                
+                console.log('------------------------------------------------timestamp------------------------------');
+                console.log(tmp);
+                console.log('---------------------------------------time-------------------------------------');
+                console.log(timestamp)
+                let food : string = items.food;
+                let quantity: number = parseInt(items.quantity.toString());
+                let rqsQnt: number = parseInt(request.quantity.toString());
+                let deviation: number = rqsQnt - quantity;
+
+                await orderDAO.loadOrder(uuid, timestamp, food, quantity, deviation)
+                .then(()=>{
+                    res.send({'msg' : 'Caricamento andato a buon fine!'})
+                })
+                .catch(()=>{
+                    res
+                    .status(StatusCodes.NOT_ACCEPTABLE)
+                    .send({'err' : 'errore nel caricamento dell ordine'});
+                })
+                index++;
+
+            })
+        }else{
+            res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .send({'err' : 'Problema nel caricamento degli alimenti'});
+        }
+}};
+
+
+  
+
+/*
 export async function consumeStore(req: any, res: any){
     let item = req.body.requestOrder;
+    let uuid: string = req.params.uuid;
 
     const numberOfElements = Object.keys(item).length;
     if(numberOfElements == 1){
@@ -60,6 +191,7 @@ export async function consumeStore(req: any, res: any){
         console.log('------------------------------------------------------consume-------------------------------------------------')
         console.log(-qnt)
         console.log(typeof(qnt))
+        await orderDAO.loadOrder(uuid, item, true);
         await storeDAO.update(item.food, -qnt)
             .then(() => {
                 res.send('order create')
@@ -87,23 +219,4 @@ export async function consumeStore(req: any, res: any){
             });
         })
     }    
-}
-
-export async function orderStart(req: any, res: any, next: any){
-
-    let uuid : string = req.params.uuid;
-    console.log('-------------------------------orderStart----------------------------------------')
-    console.log(uuid);
-    await orderDAO.changeStatus(StatusOrder.InEsecuzione, uuid)
-    .then(() => {
-        res.send('l ordine è stato processato correttamente, stato ordine : IN ESECUZIONE');
-        next();
-        //res.send(store);
-    })
-    .catch((error) => {
-        res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .send({ 'err': 'ordine non presente'});
-    });
-}
-  
+}*/

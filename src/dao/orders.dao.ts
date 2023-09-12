@@ -7,7 +7,7 @@ interface IOrderDAO {
     create(orders: any, user: string, singleElement: boolean): Promise<void>;
     retrieveAll(): Promise<Order[]>;
     retrieveById(id: string): Promise<Order>;
-    loadOrder(id: string, loadOrder: any, singleElement: boolean): Promise<void>;
+    loadOrder(uuid: string, timestamp: string, food: string, quantity: number, deviation: number): Promise<void>;
     retrieveLoadOrder(): Promise<loadOrder[]>;
     changeStatus(status: StatusOrder, uuid: string):Promise<void>;
     isExists(uuid: string): Promise<boolean>;
@@ -122,49 +122,22 @@ export class OrderDAO implements IOrderDAO {
     
   }
 
-  async loadOrder(id: string, load: any, singleElement: boolean): Promise<void> {
-    return this.retrieveById(id)
-      .then((order) => {
-        if(!order){
-          throw new Error('Order not found');
-        }
-        
+  async loadOrder(uuid: string, timestamp: string, food: string, 
+                  quantity: number, deviation: number)
+                  : Promise<void> {        
 
-        if(singleElement){
-          
+        //let reqQnt = order;
+          //reqQnt = reqQnt.quantity;
           let item: loadOrder = new loadOrder({
-            uuid: order.uuid,
-            food: load.food,
-            quantity: load.quantity,
-            timestamp: Date.now()
+            uuid: uuid,
+            food: food,
+            quantity: quantity,
+            timestamp: timestamp,
+            deviation: deviation,
           });
 
-          //console.log('jsonArrey : ' + JSON.stringify(item));
+          console.log('jsonArrey : ' + JSON.stringify(item));
           item.save();
-        }
-
-        else{
-          load.map((items: any) => {
-            let item: loadOrder = new loadOrder({
-              uuid: order.uuid, 
-              food: items.food,
-              quantity: items.quantity,
-              timestamp: Date.now(),
-            });
-      
-            //console.log('jsonArrey : ' + JSON.stringify(item));
-            item.save();
-          });
-        }
-
-      })
-      .then(() => {
-        console.log('Loaded');
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-        throw new Error("Failed to add a load order.");
-      });
 
   }
     

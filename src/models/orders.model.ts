@@ -52,20 +52,16 @@ Order.init({
 
 export class loadOrder extends Model{
   declare uuid: string;
-  declare foodIndex: number
   declare food: string;
   declare quantity: number;
-  declare timestamp: number;
+  declare timestamp: string;
+  declare deviation: number;
 }
 
 loadOrder.init({
   uuid: {
     type: DataTypes.UUID,
     primaryKey: true,
-  },
-  foodIndex: {
-    type: DataTypes.NUMBER,
-    autoIncrement: true
   },
   food: {
     type: DataTypes.STRING,
@@ -76,8 +72,12 @@ loadOrder.init({
     allowNull: false,
   },
   timestamp: {
-    type: DataTypes.DATE,
+    type: DataTypes.STRING,
     allowNull: false
+  },
+  deviation: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   }
 }, {sequelize, tableName: 'load_order'});
 
