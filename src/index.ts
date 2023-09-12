@@ -81,7 +81,7 @@ app.post('/order/:uuid/load',
     mdlOrder.checkOrder,
     mdlOrder.checkState,
     mdlSchema.validateLoadOrder,
-    mdlOrder.checkLoad,
+    mdlOrder.checkLoad,                       //IMPLEMENTARE LO STATO DI FALLITO
     mdlOrder.checkQuantityLoad,
     mdlOrder.checkSequence
     ],
@@ -95,7 +95,9 @@ app.post('/order/:uuid/load',
 );
 // 3
 //MOSTRA STATO DELL'ORDINE 
-
+app.get('/order/status/:uuid', jwtAuth,async (req:any, res:any) => {
+    controlOrder.getOrder(req, res);
+})
 
 // 4
 // ROTTA LIBERA

@@ -12,12 +12,26 @@ interface IOrderDAO {
     retrieveByRange(startDate: string, endDate: string): Promise<Order[]>;
     loadOrder(uuid: string, timestamp: string, food: string, quantity: number, deviation: number): Promise<void>;
     retrieveLoadOrder(): Promise<loadOrder[]>;
+    retrieveLoadOrderByUuid(uuid: string): Promise<loadOrder[]>;
     changeStatus(status: StatusOrder, uuid: string):Promise<void>;
     isExists(uuid: string): Promise<boolean>;
   }
   
 // Classe DAO per gestire le operazioni su User
 export class OrderDAO implements IOrderDAO {
+
+  async retrieveLoadOrderByUuid(uuid: string): Promise<loadOrder[]> {
+    return loadOrder.findAll({
+      where: { uuid: uuid }
+    })
+        .then((orders) => {
+            return orders;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            throw new Error("Failed to retrieve orders");
+        });
+  }
 
   async retrieveByRange(startDate: string, endDate: string): Promise<Order[]> {
     let start = moment(startDate).toDate();

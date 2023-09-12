@@ -184,6 +184,35 @@ export async function searchRange(req:any, res: any) {
     })
 }
 
+export async function getOrder(req:any, res: any) {
+    try {
+        let uuid: string = req.params.uuid;
+
+        let order = await orderDAO.retrieveById(uuid);
+        let load = await orderDAO.retrieveLoadOrderByUuid(uuid);
+        let sequence: any = []
+        load.map((item) =>{
+            sequence.push(item.food);
+        } )
+        
+        // Formatto la risposta come desiderato.
+        const responseJson = {
+          orderId: req.params.uuid,
+          status: order.status,
+          order_create_at : order.created_at,
+          order_create_by : order.created_by,
+          sequence: sequence,
+          message: "Stato dell'ordine recuperato con successo.",
+        };
+    
+        // Invia la risposta al client.
+        res.status(200).send(responseJson);
+      } catch (error) {
+        // Gestisci gli errori in caso di problemi nella richiesta.
+        console.error("Errore durante la richiesta dello stato dell'ordine:", error);
+        res.status(500).send({ error: "Si è verificato un errore durante la richiesta dello stato dell'ordine." });
+      }
+}
 /*
 export async function consumeStore(req: any, res: any){
     let item = req.body.requestOrder;
