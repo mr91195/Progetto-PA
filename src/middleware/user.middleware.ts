@@ -42,7 +42,7 @@ export async function checkUserTokenAmount(req:any, res:any, next:any){
             next();
         }else{
             res
-            .status(StatusCodes.FORBIDDEN)
+            .status(StatusCodes.UNAUTHORIZED)
             .send({'err' : "Token insufficienti"});
         }
     }catch(e){

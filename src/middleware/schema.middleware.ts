@@ -59,6 +59,34 @@ export function validateCreateOrder(req:any, res:any, next:any){
     })
     next();
   }
-  
-  
+}
+
+
+export function validateLoadOrder(req:any, res:any, next:any){
+  const validate = ajv.compile(schemaStore)
+  let item = req.body.loadOrder;
+  const numberOfElements = Object.keys(item).length;
+  if(numberOfElements == 1){
+    item = item[0];
+    const valid = validate(item)
+    if (!valid){
+      res
+      .status(StatusCodes.UNPROCESSABLE_ENTITY)
+      .send({'err' : 'Json del body non valido!!'});
+    }
+    else{
+      next();
+    }
+  }
+  else{
+    item.map(async (items: any) => {
+      let valid = validate(items)
+      if (!valid){
+        res
+        .status(StatusCodes.UNPROCESSABLE_ENTITY)
+        .send({'err' : 'Json del body non valido!!'});
+      }
+    })
+    next();
+  }
 }

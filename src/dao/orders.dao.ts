@@ -1,5 +1,4 @@
 import { StatusOrder, Order, loadOrder, JsonRequest} from "models/orders.model";
-import { Json } from "sequelize/types/utils";
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -10,10 +9,38 @@ interface IOrderDAO {
     retrieveById(id: string): Promise<Order>;
     loadOrder(id: string, loadOrder: any, singleElement: boolean): Promise<void>;
     retrieveLoadOrder(): Promise<loadOrder[]>;
+    changeStatus(status: StatusOrder, uuid: string):Promise<void>;
+    isExists(uuid: string): Promise<boolean>;
   }
   
 // Classe DAO per gestire le operazioni su User
 export class OrderDAO implements IOrderDAO {
+  
+  async isExists(uuid: string): Promise<boolean> {
+    let order = await this.retrieveById(uuid);
+    if (!order){
+      return false;
+    }
+    else{
+    
+    return true;
+  }
+  }
+  
+  async changeStatus(status: StatusOrder, uuid: string): Promise<void> {
+    let order = await this.retrieveById(uuid);
+    console.log('----------------------------------------order--------------------------------------')
+    if (order){
+      console.log(status);
+      order.status = status;
+      await order.save();
+    }
+    else{
+      //console.error('Error:', error);
+      throw new Error("Failed to retrieve order");
+    }
+    console.log(order.status);
+  }
 
   async create(order: any, user: string, singleElement: boolean): Promise<void> {
 
@@ -112,7 +139,7 @@ export class OrderDAO implements IOrderDAO {
             timestamp: Date.now()
           });
 
-          console.log('jsonArrey : ' + JSON.stringify(item));
+          //console.log('jsonArrey : ' + JSON.stringify(item));
           item.save();
         }
 
@@ -125,7 +152,7 @@ export class OrderDAO implements IOrderDAO {
               timestamp: Date.now(),
             });
       
-            console.log('jsonArrey : ' + JSON.stringify(item));
+            //console.log('jsonArrey : ' + JSON.stringify(item));
             item.save();
           });
         }

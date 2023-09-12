@@ -1,5 +1,6 @@
 import { OrderDAO } from "dao/orders.dao";
 import { StoreDAO } from "dao/store.dao";
+import {StatusOrder} from "../models/orders.model";
 import {
 	ReasonPhrases,
 	StatusCodes,
@@ -86,5 +87,23 @@ export async function consumeStore(req: any, res: any){
             });
         })
     }    
+}
+
+export async function orderStart(req: any, res: any, next: any){
+
+    let uuid : string = req.params.uuid;
+    console.log('-------------------------------orderStart----------------------------------------')
+    console.log(uuid);
+    await orderDAO.changeStatus(StatusOrder.InEsecuzione, uuid)
+    .then(() => {
+        res.send('l ordine è stato processato correttamente, stato ordine : IN ESECUZIONE');
+        next();
+        //res.send(store);
+    })
+    .catch((error) => {
+        res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .send({ 'err': 'ordine non presente'});
+    });
 }
   

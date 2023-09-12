@@ -14,15 +14,13 @@ interface IStoreDAO {
   
 // Classe DAO per gestire le operazioni sullo store
 export class StoreDAO implements IStoreDAO {
-//DEVO AGGIUNGERE IL CONTROLLO CHE SE ESISTE GIA, AGGIUNGO LA QUANTITA.
-//DEVO IMPLEMENTARE CHE TUTTI GLI INPUT DEVON ESSERE TUTTI LOWERCASE
 
   async isAction(name: string, requestQuantity: number): Promise<boolean> {   
     let food = await Store.findOne({
       where: { food: name }
     });
     if (food){
-      let flag = food.quantity > requestQuantity ? true  : false;
+      let flag = food.quantity >= requestQuantity ? true  : false;
       if (flag){
         return true;
       }else{
@@ -95,14 +93,6 @@ export class StoreDAO implements IStoreDAO {
 async update(food: string, quantity: number): Promise<void> {
   let element = await this.retrieveByName(food)
   if (element){
-    console.log({'element' : element.quantity,
-    'element type' : typeof(element.quantity),
-    'quantity' : quantity,
-    'quantity type' : typeof(quantity)
-    })
-    console.log('------------------------------------------------------update-------------------------------------------------')
-    console.log(element.quantity)
-    console.log(typeof(element.quantity))
     element.quantity += quantity;
     element.save();
   }

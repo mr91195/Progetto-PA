@@ -52,6 +52,7 @@ Order.init({
 
 export class loadOrder extends Model{
   declare uuid: string;
+  declare foodIndex: number
   declare food: string;
   declare quantity: number;
   declare timestamp: number;
@@ -61,6 +62,10 @@ loadOrder.init({
   uuid: {
     type: DataTypes.UUID,
     primaryKey: true,
+  },
+  foodIndex: {
+    type: DataTypes.NUMBER,
+    autoIncrement: true
   },
   food: {
     type: DataTypes.STRING,

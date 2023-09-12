@@ -51,14 +51,23 @@ app.post('/order/create',
   [jwtAuth, mdlUser.checkUserTokenAmount, mdlSchema.validateCreateOrder, mdlOrder.checkFood, mdlOrder.checkQuantity],
   async (req: any, res: any) => {
     await controlOrder.createOrder(req, res);
-    await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
+    //await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
     await userApp.decrementToken(req.user.email);
 
 });
 
-
 // 1
 // PRESO IN CARICO -> IN ESECUZIONE
+  
+app.put('/order/start/:uuid',
+  [jwtAuth, mdlUser.checkUserTokenAmount, mdlOrder.checkOrder], 
+  async (req: any, res: any, next: any) => {
+  await controlOrder.orderStart(req, res, next);
+  await userApp.decrementToken(req.user.email);
+});
+
+
+
 
 // 2
 // CARICAMENTO ORDINE 
@@ -66,7 +75,21 @@ app.post('/order/create',
 // QUANTITA DA CARICARE DISCSTA DI UNA PERCENTUALE CON LA RICHIESTA
 // ALLORA IMPOSTA STATO IN -> COMPLETATO
 //await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
+app.post('/order/:uuid/load',
+  [jwtAuth, 
+    mdlUser.checkUserTokenAmount,
+    mdlOrder.checkOrder,
+    mdlOrder.checkState,
+    mdlSchema.validateLoadOrder,
+    mdlOrder.checkLoad,
+    mdlOrder.checkQuantityLoad,
+    mdlOrder.checkSequence
+    ],
+  async (req:any, res: any) => {
+    res.send('ok')
+  }
 
+);
 // 3
 //MOSTRA STATO DELL'ORDINE 
 

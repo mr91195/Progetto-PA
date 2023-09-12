@@ -26,10 +26,11 @@ CREATE TABLE orders (
 
 CREATE TABLE load_order (
     uuid UUID NOT NULL,
-    index INTEGER NOT NULL,
+    foodIndex INTEGER NOT NULL,
     food VARCHAR(255) NOT NULL,
     quantity INTEGER NOT NULL,
-    timestamp TIMESTAMP NOT NULL
+    timestamp TIMESTAMP NOT NULL,
+    deviation INTEGER NOT NULL
 );
 
 -- Inserimento di dati di esempio nella tabella Users
