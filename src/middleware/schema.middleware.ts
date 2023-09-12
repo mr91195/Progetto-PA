@@ -18,6 +18,27 @@ const schemaStore = {
     "required": ["food", "quantity"]
   }
 
+const schemaRange = {
+  "type": "object",
+  "properties": {
+    "start": { "type": "string",},
+    "end": { "type": "string", }
+  },
+  "required": ["start", "end"]
+}
+
+export function validateRangeData(req:any, res:any, next:any){
+  const validate = ajv.compile(schemaRange)
+  const valid = validate(req.body)
+  if (!valid){
+    res
+    .status(StatusCodes.UNPROCESSABLE_ENTITY)
+    .send({'err' : 'Json del body non valido!!'});
+  }
+  else{
+    next();
+  }
+}
 
   export function validateCreateStore(req:any, res:any, next:any){
     const validate = ajv.compile(schemaStore)

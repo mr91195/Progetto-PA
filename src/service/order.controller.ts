@@ -1,6 +1,6 @@
 import { OrderDAO } from "dao/orders.dao";
 import { StoreDAO } from "dao/store.dao";
-import {StatusOrder} from "../models/orders.model";
+import {Order, StatusOrder} from "../models/orders.model";
 import {
 	ReasonPhrases,
 	StatusCodes,
@@ -110,18 +110,11 @@ export async function consumeStore(req: any, res: any){
             let request = order.request_order[0];
             let tmp: number = new Date().getTime() - new Date(order.created_at).getTime();
             let timestamp: string = convertMsToTime(tmp);
-            
-            console.log('------------------------------------------------timestamp------------------------------');
-            console.log(tmp);
-            console.log('---------------------------------------time-------------------------------------');
-            console.log(timestamp)
             let food : string = item.food;
             let quantity: number = parseInt(item.quantity.toString());
-
-
             let rqsQnt: number = parseInt(request.quantity.toString());
             let deviation: number = rqsQnt - quantity;
-
+            await storeDAO.update(food, -quantity);
             await orderDAO.loadOrder(uuid, timestamp, food, quantity, deviation)
                 .then(()=>{
                     res.send({'msg' : 'Caricamento andato a buon fine!'})
@@ -146,16 +139,12 @@ export async function consumeStore(req: any, res: any){
                 let request = order.request_order[index];
                 let tmp: number = new Date().getTime() - new Date(order.created_at).getTime();
                 let timestamp: string = convertMsToTime(tmp);
-                
-                console.log('------------------------------------------------timestamp------------------------------');
-                console.log(tmp);
-                console.log('---------------------------------------time-------------------------------------');
-                console.log(timestamp)
                 let food : string = items.food;
                 let quantity: number = parseInt(items.quantity.toString());
                 let rqsQnt: number = parseInt(request.quantity.toString());
                 let deviation: number = rqsQnt - quantity;
-
+                index++;
+                await storeDAO.update(food, -quantity);
                 await orderDAO.loadOrder(uuid, timestamp, food, quantity, deviation)
                 .then(()=>{
                     res.send({'msg' : 'Caricamento andato a buon fine!'})
@@ -165,8 +154,6 @@ export async function consumeStore(req: any, res: any){
                     .status(StatusCodes.NOT_ACCEPTABLE)
                     .send({'err' : 'errore nel caricamento dell ordine'});
                 })
-                index++;
-
             })
         }else{
             res
@@ -176,7 +163,26 @@ export async function consumeStore(req: any, res: any){
 }};
 
 
-  
+export async function searchRange(req:any, res: any) {
+    let startDate: string = req.body.start;
+    let endDate: string = req.body.end;
+
+
+    await orderDAO.retrieveByRange(startDate, endDate)
+    .then( (orders)=>{
+        if(orders.length === 0){
+            res
+            .status(StatusCodes.NOT_FOUND)
+            .send({'err' : 'Nessun ordine'});
+        }else{
+            res.send(orders);
+        }
+    })
+    .catch( () => {
+        res
+        .status(StatusCodes.NOT_FOUND).send({'err' : 'Nessun ordine'});
+    })
+}
 
 /*
 export async function consumeStore(req: any, res: any){

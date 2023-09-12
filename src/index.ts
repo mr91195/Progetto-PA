@@ -13,7 +13,7 @@ import {
 } from 'http-status-codes';
 import { OrderDAO } from "dao/orders.dao";
 import { StoreDAO} from "dao/store.dao";
-import { Order } from "models/orders.model";
+import { Order, StatusOrder } from "models/orders.model";
 import { Store } from "models/store.model";
 import { stringify } from "querystring";
 import { request } from "express";
@@ -87,7 +87,9 @@ app.post('/order/:uuid/load',
     ],
   async (req:any, res: any) => {
     await controlOrder.consumeStore(req, res);
-    res.send('ok')
+    orderDAO.changeStatus(StatusOrder.Completato, req.params.uuid);
+    await userApp.decrementToken(req.user.email);
+
   }
 
 );
@@ -97,7 +99,9 @@ app.post('/order/:uuid/load',
 
 // 4
 // ROTTA LIBERA
-
+app.post('/order/search/range', mdlSchema.validateRangeData ,async (req:any , res:any) => {
+    await controlOrder.searchRange(req, res);
+})
 
 
 app.get('/usersAll', (req: any, res:any) => {

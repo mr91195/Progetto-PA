@@ -1,4 +1,6 @@
 import { StatusOrder, Order, loadOrder, JsonRequest} from "models/orders.model";
+const { Op } = require('sequelize');
+const moment = require('moment');
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -7,6 +9,7 @@ interface IOrderDAO {
     create(orders: any, user: string, singleElement: boolean): Promise<void>;
     retrieveAll(): Promise<Order[]>;
     retrieveById(id: string): Promise<Order>;
+    retrieveByRange(startDate: string, endDate: string): Promise<Order[]>;
     loadOrder(uuid: string, timestamp: string, food: string, quantity: number, deviation: number): Promise<void>;
     retrieveLoadOrder(): Promise<loadOrder[]>;
     changeStatus(status: StatusOrder, uuid: string):Promise<void>;
@@ -15,6 +18,24 @@ interface IOrderDAO {
   
 // Classe DAO per gestire le operazioni su User
 export class OrderDAO implements IOrderDAO {
+
+  async retrieveByRange(startDate: string, endDate: string): Promise<Order[]> {
+    let start = moment(startDate).toDate();
+    // Data di fine dell'intervallo
+    let end = moment(endDate).toDate();
+    return Order.findAll({
+      where: { created_at: {
+        [Op.between]: [start, end],
+      } }
+    })
+        .then((orders) => {
+            return orders;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            throw new Error("Failed to retrieve orders");
+        });
+  }
   
   async isExists(uuid: string): Promise<boolean> {
     let order = await this.retrieveById(uuid);
