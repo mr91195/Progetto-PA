@@ -63,8 +63,29 @@ La seguente tabella mostra le richieste possibili:
 | GET             | /order/status/:uuid            | SI        |
 | POST            | /order/search/range            | NO        |
 | PUT             | /tokenUpdate                   | SI        |
+
+
+Tabella di implementazioni di rotte non richieste, comode per la generazione del token jwt e il relativo test del token:
+|    TIPO        | ROTTA                         | TOKEN JWT |
 | GET             | /login/:user                   | NO        |
 | GET             | /test                          | SI        |
 
 
 
+## IMPLEMENTAZIONE
+
+## Casi d'uso 
+    Le funzionalità implementate si dividono in 2 Gruppi
+    • Funzioni utente
+        • Inserisci alimento nello store.
+        • Crea e inserisci nuovo ordine.
+        • Avviare l'ordine, modificando lo stato in 'esecuzione'.
+        • Caricare gli alimenti per l'ordine specifico.
+        • Visualizzare lo stato di un ordine.
+    • Funzioni admin
+        • Ricaricare i token dell'utente 
+    • Funzioni senza JWT
+        • Ricerca ordini in un range temporale
+       
+
+![Casi d'uso](/Images/UseCase.png)
