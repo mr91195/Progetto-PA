@@ -184,8 +184,36 @@ Esempio di body:
     • Funzioni senza JWT
         • Ricerca ordini in un range temporale
        
+<img src = "/Images/UseCase.png">
 
-![Casi d'uso](/Images/UseCase.png)
+
+### Sequence Diagram
+* **Chiamata POST /store/create**
+<img src = "/Images/diagram_store_create.png">
+
+* **Chiamata POST /order/create**
+<img src = "/Images/diagram_order_create.png">
+
+
+* **Chiamata PUT /order/start/:uuid**
+<img src = "/Images/diagram_order_start.png">
+
+
+* **Chiamata POST /order/:uuid/load**
+<img src = "/Images/diagram_order_uuid_load.png">
+
+
+* **Chiamata GET /order/status/:uuid**
+<img src = "/Images/diagram_order_status_uuid.png">
+
+
+* **Chiamata POST /order/search/range**
+<img src = "/Images/diagram_order_search_range.png">
+
+
+
+
+
 
 
 
