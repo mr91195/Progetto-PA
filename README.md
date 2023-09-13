@@ -36,8 +36,8 @@ Il sistema deve prevedere:
 * Un ordine puo avere diversi stati: CREATO, FALLITO, IN ESECUZIONE, COMPLETATO
 
 - Implementare delle rotte specifiche per la gestione delle sequenti operazioni:
- -- 'Preso in carico ordine x'
--- 'Caricato x kg di alimento y' con relativo timestamp e aggiornare le quantità disponibili.
+  'Preso in carico ordine x'
+  'Caricato x kg di alimento y' con relativo timestamp e aggiornare le quantità disponibili.
 
 * Creare una rotta per ottenere lo stato di un ordine mettendo in evidenza le operazioni di carico che sono state effettuate;
 
