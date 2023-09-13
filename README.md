@@ -73,7 +73,9 @@ La seguente tabella mostra le richieste possibili:
 
 
 Tabella di implementazioni di rotte non richieste, comode per la generazione del token jwt e il relativo test del token:
+
 |    TIPO        | ROTTA                         | TOKEN JWT |
+| --------------- | ------------------------------ | --------- |
 | GET             | /login/:user                   | NO        |
 | GET             | /test                          | SI        |
 
