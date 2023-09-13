@@ -6,7 +6,7 @@ interface IUserDAO {
     create(user: User): Promise<void>;
     retrieveAll(): Promise<User[]>;
     retrieveByEmail(email: string): Promise<User>;
-    updateToken(email: string, token_: number): Promise<void>;
+    updateToken(email: string, tokenAdd: number): Promise<void>;
     decrementToken(email: string): Promise<void>;
     delete(email: string): Promise<void>;
   }

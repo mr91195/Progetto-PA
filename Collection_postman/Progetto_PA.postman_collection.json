@@ -1,0 +1,155 @@
+{
+	"info": {
+		"_postman_id": "5551d6a6-4b21-4a5f-85e0-deda977ce34d",
+		"name": "Progetto_PA",
+		"description": "Collection di rotte richieste con relative specifiche tecniche.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "29497809"
+	},
+	"item": [
+		{
+			"name": "store/create",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9wMUBtYWlsbmF0b3IuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTQ0NDUxNzF9.tfHmJwyQ-Gxmx3qKn_nrwZHhK16JPb6wWD_nc-uin24"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"food\" : \"pollo\",\n    \"quantity\" : 12\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/store/create"
+			},
+			"response": []
+		},
+		{
+			"name": "order/create",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9wMUBtYWlsbmF0b3IuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTQ0NDUxNzF9.tfHmJwyQ-Gxmx3qKn_nrwZHhK16JPb6wWD_nc-uin24"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"requestOrder\": [\n    { \"food\": \"pollo\", \"quantity\": 2 },\n    { \n        \"food\": \"sedano\", \n        \"quantity\": 5 \n        }\n  ]\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/order/create"
+			},
+			"response": []
+		},
+		{
+			"name": "/order/start/:uuid",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9wMUBtYWlsbmF0b3IuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTQ1MDcxNTd9.CJBCjfdwS-eknVhUpU3BvH1KLQOay-TDzWhZRE9sdMo"
+					}
+				},
+				"method": "PUT",
+				"header": [],
+				"url": "http://localhost:8080/order/start/70a18c65-a7f5-45a0-978d-41d6f05c36dd"
+			},
+			"response": []
+		},
+		{
+			"name": "order/:uuid/load",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9wMUBtYWlsbmF0b3IuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTQ1MDcxNTd9.CJBCjfdwS-eknVhUpU3BvH1KLQOay-TDzWhZRE9sdMo"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"loadOrder\" : [{\n        \"food\": \"pollo\", \n        \"quantity\": 2 }\n    ,{ \n        \"food\" : \"sedano\",\n        \"quantity\" : 5\n        }\n    ]\n    \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/order/70a18c65-a7f5-45a0-978d-41d6f05c36dd/load"
+			},
+			"response": []
+		},
+		{
+			"name": "order/search/range",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"start\": \"2023-09-01\",\n  \"end\": \"2023-09-15\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/order/search/range"
+			},
+			"response": []
+		},
+		{
+			"name": "order/status/:uuid",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im9wMUBtYWlsbmF0b3IuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE2OTQ1MDcxNTd9.CJBCjfdwS-eknVhUpU3BvH1KLQOay-TDzWhZRE9sdMo"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8080/order/status/70a18c65-a7f5-45a0-978d-41d6f05c36dd"
+			},
+			"response": []
+		},
+		{
+			"name": "tokenUpdate/:user/:token",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGdlbmVyaWNtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY5NDU5NTU4NH0.-YGgvvFdZ7Kpm0lcvkGKZi74L1zYOESnfSgmEnwgSiQ"
+					}
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user\" : \"op2@mailnator.com\",\n    \"token\" : 5\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/tokenUpdate"
+			},
+			"response": []
+		}
+	]
+}

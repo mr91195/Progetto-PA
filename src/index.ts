@@ -25,11 +25,11 @@ import * as mdlUser from './middleware/user.middleware';
 import * as mdlOrder from './middleware/store-order.middleware';
 const orderDAO = new OrderDAO();
 const storeDAO = new StoreDAO();
+const userApp = new UserDAO();
 
 
 const express = require("express");
 const app = express();
-const userApp = new UserDAO();
 
 app.use(express.json());
 
@@ -48,10 +48,15 @@ app.post('/store/create',
 
 // CREA ORDINE
 app.post('/order/create', 
-  [jwtAuth, mdlUser.checkUserTokenAmount, mdlSchema.validateCreateOrder, mdlOrder.checkFood, mdlOrder.checkQuantity],
+  [
+    jwtAuth, 
+    mdlUser.checkUserTokenAmount,
+    mdlSchema.validateCreateOrder, 
+    mdlOrder.checkFood, 
+    mdlOrder.checkQuantity
+  ],
   async (req: any, res: any) => {
     await controlOrder.createOrder(req, res);
-    //await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
     await userApp.decrementToken(req.user.email);
 
 });
@@ -106,24 +111,27 @@ app.post('/order/search/range', mdlSchema.validateRangeData ,async (req:any , re
 })
 
 
-app.get('/usersAll', (req: any, res:any) => {
-  userApp.retrieveAll()
-  .then((userDaoAll) => {
-      res.send(userDaoAll);
-      console.log('Users finded');
+app.put('/tokenUpdate', [jwtAuth, mdlUser.checkAdminRole, mdlSchema.validateTokenUpdate],async (req:any, res:any) => {
+
+  let user: string = req.body.user;
+  let token: number = parseInt(req.body.token);
+  
+  await userApp.updateToken(user, token)
+  .then(()=>{
+    res.send({'msg' : 'token auementati correttamente',
+              'token' : token,
+            'user' : user});
+  } )
+  .catch(()=>{
+    res.status(StatusCodes.NOT_FOUND)
+    .send({'err' : 'user non presente'});
   })
-  .catch((error) => {
-      console.error('Error:', error);
-      res.status(500).send("Failed to retrieve users");  
-  });
-});
-
-app.get('/test', jwtAuth ,(req: any, res:any) => {
-
-  res.send({"ROTTA": "Autenticazione effettuata correttamente","user" : req.user});
-}); 
+})
 
 
+
+
+// ROTTA PER GENERARE IL TOKEN JWT
 
 app.get('/login/:user', (req: any, res:any) => {
   let user = req.params.user;
@@ -137,6 +145,51 @@ app.get('/login/:user', (req: any, res:any) => {
     })
   
 });
+
+
+
+
+
+
+
+
+
+
+/*
+
+  ROTTE PER DEV TESTING
+  SONO TUTTE ROTTE LIBERE DA JWT E MIDDLEWARE VARI
+  UTILIZZATE PER TESTARE LE CRUD SUI VARI MODELLI
+
+
+
+*/
+
+app.get('/usersAll', (req: any, res:any) => {
+  userApp.retrieveAll()
+  .then((userDaoAll) => {
+      res.send(userDaoAll);
+      console.log('Users finded');
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+      res.status(500).send("Failed to retrieve users");  
+  });
+});
+
+
+
+
+// ROTTA PER VERIFICA DEL TOKENJWT
+
+app.get('/test', jwtAuth ,(req: any, res:any) => {
+
+  res.send({"ROTTA": "Autenticazione effettuata correttamente","user" : req.user});
+}); 
+
+
+
+// ROTTE PER DAO USER
 
 
 app.get('/userFind/:email', async (req: any, res: any) => {
@@ -232,7 +285,7 @@ app.delete('/delUser', (req: any, res: any) => {
 
 
 
-//TESTING ROTTE DAO STORE E ORDERS
+//ROTTE DAO STORE
 
 
 app.get('/store/retrieveAll', async (req: any, res: any) => {
@@ -274,6 +327,7 @@ app.put('/store/update', async (req: any, res: any) => {
 });
 
 
+// ROTTE DAO ORDER
 
 
 app.get('/order/retrieveAll', async (req: any, res: any) => {

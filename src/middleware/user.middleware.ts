@@ -15,8 +15,8 @@ export async function checkUserRole(req:any, res:any, next:any){
         next();
     }else{
         res
-        .status(StatusCodes.FORBIDDEN)
-	    .send(ReasonPhrases.FORBIDDEN);
+        .status(StatusCodes.UNAUTHORIZED)
+	    .send({'err' : 'ruolo utenza non valido come admin'});
     }
 }
 
@@ -26,8 +26,8 @@ export async function checkAdminRole(req:any, res:any, next:any){
         next();
     }else{
         res
-        .status(StatusCodes.FORBIDDEN)
-	    .send(ReasonPhrases.FORBIDDEN);
+        .status(StatusCodes.UNAUTHORIZED)
+	    .send({'err' : 'ruolo utenza non valido come user'});
     }
 }
 

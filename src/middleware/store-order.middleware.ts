@@ -13,6 +13,21 @@ require('dotenv').config
 const orderDAO = new OrderDAO();
 const storeDAO = new StoreDAO();
 
+
+async function orderFailed(uuid: string){
+
+    console.log('-------------------------------orderStart----------------------------------------')
+    console.log(uuid);
+    await orderDAO.changeStatus(StatusOrder.Fallito, uuid)
+    .then(() => {
+    })
+    .catch((error) => {
+        console.log(error);
+        throw new Error(error);
+    });
+}
+
+
 export async function checkFood(req: any, res: any, next: any){
 
     let item = req.body.requestOrder;
@@ -28,6 +43,8 @@ export async function checkFood(req: any, res: any, next: any){
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'elemeno non presente'});
+                    
+
                 }else{
                     next();
                 }
@@ -185,6 +202,10 @@ export async function checkSequence(req: any, res: any, next: any){
             let flagQnt = orderQnt==loadQnt ? true : false;
 
             if(!flagFood || !flagQnt){
+                if(req.params.uuid !== undefined){
+                    orderFailed(req.params.uuid);
+                }
+                        
                 res
                 .status(StatusCodes.EXPECTATION_FAILED)
                 .send({'err' : 'Spiacenti gli alimenti caricati non rispettano la richiesta'});
@@ -206,6 +227,9 @@ export async function checkSequence(req: any, res: any, next: any){
                 if (scostamentoPercentuale <= percentage) {
                     next();
                 } else {
+                    if(req.params.uuid !== undefined){
+                        orderFailed(req.params.uuid);
+                    }
                     res
                     .status(StatusCodes.EXPECTATION_FAILED)
                     .send({'err' : 'Spiacenti il carico non rispetta la quantità richiesta'});
@@ -247,6 +271,9 @@ export async function checkSequence(req: any, res: any, next: any){
         if(sonoUguali){
             next();
         }else{
+            if(req.params.uuid !== undefined){
+                orderFailed(req.params.uuid);
+            }
             res
             .status(StatusCodes.EXPECTATION_FAILED)
             .send({'err' : 'Spiacenti il carico non rispetta la richiesta'});
@@ -270,6 +297,10 @@ export async function checkLoad(req: any, res: any, next: any){
         await storeDAO.isExists(item.food)
             .then((store) => {
                 if(!store){
+                    if(req.params.uuid !== undefined){
+                        orderFailed(req.params.uuid);
+                    }
+
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'elemeno non presente'});
@@ -288,6 +319,10 @@ export async function checkLoad(req: any, res: any, next: any){
             try {
               const store = await storeDAO.isExists(items.food);
               if (!store) {
+                if(req.params.uuid !== undefined){
+                    orderFailed(req.params.uuid);
+                }
+
                 res.status(StatusCodes.NOT_FOUND).send({ 'err': 'quantità non presente nello store' });
                 return false; // Ritorna false se la chiamata non ha avuto successo
               }
@@ -326,6 +361,9 @@ export async function checkQuantityLoad(req: any, res: any, next: any){
         await storeDAO.isAction(item.food, item.quantity)
             .then((store) => {
                 if(!store){
+                    if(req.params.uuid !== undefined){
+                        orderFailed(req.params.uuid);
+                    }
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'quantità non presente nello store'});
@@ -344,6 +382,9 @@ export async function checkQuantityLoad(req: any, res: any, next: any){
             await storeDAO.isAction(items.food, items.quantity)
             .then((store) => {
                 if(!store){
+                    if(req.params.uuid !== undefined){
+                        orderFailed(req.params.uuid);
+                    }
                     res
                     .status(StatusCodes.NOT_FOUND)
                     .send({'err':'quantità non presente nello store'});

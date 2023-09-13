@@ -27,6 +27,29 @@ const schemaRange = {
   "required": ["start", "end"]
 }
 
+const schemaToken = {
+  "type" : "object",
+  "properties" : {
+    "user" : {"type" : "string"},
+    "token" : {"type" : "integer"}
+  },
+  "required" : ["user" , "token"]
+}
+
+export function validateTokenUpdate(req:any, res:any, next:any){
+  const validate = ajv.compile(schemaToken)
+  const valid = validate(req.body)
+  if (!valid){
+    res
+    .status(StatusCodes.UNPROCESSABLE_ENTITY)
+    .send({'err' : 'Json del body non valido!!'});
+  }
+  else{
+    next();
+  }
+}
+
+
 export function validateRangeData(req:any, res:any, next:any){
   const validate = ajv.compile(schemaRange)
   const valid = validate(req.body)

@@ -7,6 +7,8 @@ import {
 	getReasonPhrase,
 	getStatusCode,
 } from 'http-status-codes';
+const { format } = require('date-fns');
+
 
 const orderDAO = new OrderDAO();
 const storeDAO = new StoreDAO();
@@ -25,22 +27,22 @@ export async function createOrder(req: any, res: any) {
             item = item[0];
             orderDAO.create(item, user, flagSingleElement)
             .then(() => {
-                res.send('Order created');
+                res.send({'msg' : 'Order created'});
                 })
             .catch((error) => {
                 console.error('Error:', error);
-                res.status(500).send("Failed to create order");
+                res.status(500).send({'err' : "Failed to create order"});
             });
         }
         else{
             flagSingleElement = false;
             orderDAO.create(itemData, user, flagSingleElement)
             .then(() => {
-                res.send('Order created');
+                res.send({'msg' : 'Order created'});
             })
             .catch((error) => {
                 console.error('Error:', error);
-                res.status(500).send("Failed to create order");
+                res.status(500).send({'err' : "Failed to create order"});
             });
         }
     } catch (error) {
@@ -48,6 +50,7 @@ export async function createOrder(req: any, res: any) {
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ 'err': 'Si è verificato un errore' });
     }
 }
+
 
 
 export async function orderStart(req: any, res: any, next: any){
@@ -190,18 +193,39 @@ export async function getOrder(req:any, res: any) {
 
         let order = await orderDAO.retrieveById(uuid);
         let load = await orderDAO.retrieveLoadOrderByUuid(uuid);
+        interface Ideviation {
+            food: string;
+            deviation: number;
+          }
+          
+        let timestamp: string = "";
         let sequence: any = []
-        load.map((item) =>{
-            sequence.push(item.food);
+        load.map((items) =>{
+            let item: Ideviation = {
+                food: items.food,
+                deviation: items.deviation
+            }
+            timestamp = items.timestamp;
+            sequence.push(item);
         } )
+
+
+        const dateObject = new Date(order.created_at);
+
+        // Formatta la data 
+        const formattedDate = format(dateObject, "yyyy-MM-dd HH:mm:ss");
+
+        //console.log(formattedDate);
+
         
         // Formatto la risposta come desiderato.
         const responseJson = {
           orderId: req.params.uuid,
           status: order.status,
-          order_create_at : order.created_at,
+          order_create_at : formattedDate,
           order_create_by : order.created_by,
           sequence: sequence,
+          processingTime: timestamp,
           message: "Stato dell'ordine recuperato con successo.",
         };
     
@@ -210,7 +234,7 @@ export async function getOrder(req:any, res: any) {
       } catch (error) {
         // Gestisci gli errori in caso di problemi nella richiesta.
         console.error("Errore durante la richiesta dello stato dell'ordine:", error);
-        res.status(500).send({ error: "Si è verificato un errore durante la richiesta dello stato dell'ordine." });
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: "Si è verificato un errore durante la richiesta dello stato dell'ordine." });
       }
 }
 /*
