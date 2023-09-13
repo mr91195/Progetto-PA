@@ -2,13 +2,6 @@
 ## Sviluppo di un back end mediante l'utilizzo di nodeJs, typescript e docker.
 
 
-<h1 align="center"> 
-
-[![N|Solid](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
-
-<a href="https://nodejs.org/en/download">
-Everywhere
-</a>.</h1><br>
 
 [![N|Solid](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 
@@ -22,6 +15,20 @@ Everywhere
 
 
 ## Obiettivo del progetto:
+
+
+Si chiede di realizzare un back-end utilizzando i seguenti framework / librerie:
+
+•	Node.JS
+
+•	Express
+
+•	Sequelize
+
+•	RDBMS a scelta dello studente (es. Postgres, MySQL, sqlite,…)
+
+Descrizione del progetto:
+
 Realizzare un sistema che consenta di gestire un workflow relativo al processo di prelievo di alcuni alimenti. In particolare si vuole gestire un workflow secondo il quale l'operatore effettui delle operazioni nella giusta sequenza caricando le quantità desiderate di alcuni alimenti. 
 Il sistema deve prevedere:
 * Creazione, modifica e aggiornamento di un alimento con relativa quantità disponibile.
@@ -200,7 +207,7 @@ Esempio di body:
 
 
 * **Chiamata POST /order/:uuid/load**
-<img src = "/Images/diagram_order_uuid_load.png">
+<img src = "/Images/diagram_order_ uuid_load.png">
 
 
 * **Chiamata GET /order/status/:uuid**
@@ -212,7 +219,43 @@ Esempio di body:
 
 
 
+## RDBMS
+Per quanto riguarda la classe che realizza la connessione con la base dati dove sono memorizzati gli utenti,
+essa è stata realizzata utilizzando il pattern singleton.
+In questo modo l'oggetto connessione è unico per tutta la sessione, evitando cosi potenziali conflitti.
 
+
+
+## DOCKER
+    • Creare file .env creando le variabili:
+    
+    PGUSER=postgres
+    PGDATABASE=prga
+    PGHOST=dbpg
+    PGPASSWORD=postgres
+    PGPORT=5432
+    JWT_KEY=superSecretKeyJwt
+    PORT=8080
+    HOST = 0.0.0.0
+    PERCENTAGE=10
+    
+    • Posizionarsi nella cartella contenente il dockerfile e utilizzare il comando docker-compose up
+    • Il database sarà inizializzato con 3 utenti livello 0 (User) e uno di livello 1 (Admin)
+        • op1@mailnator.com (con 15 token) (ruolo: user)
+        • op2@mailnator.com (con 5 token) (ruolo: user)
+        • admin@genericmail.com (con 0 token) (ruolo: admin)
+
+## Design Patterns Utilizzati
+Nel progetto sono stati implementati diversi design pattern per garantire una struttura chiara e modulare del codice. Di seguito sono elencati alcuni dei principali design pattern utilizzati:
+
+# Singleton
+Il Singleton è stato utilizzato per garantire che una sola istanza di una classe venga creata e fornita all'applicazione. In particolare, è stato utilizzato per la gestione della connessione al database, garantendo che vi sia una sola connessione attiva in tutto il ciclo di vita dell'applicazione.
+
+# Chain of Responsibility
+Il Chain of Responsibility è stato utilizzato per creare una catena di gestori delle richieste, ognuno dei quali può decidere se gestire la richiesta o passarla al successivo nella catena. Questo design pattern è stato utilizzato per gestire le richieste HTTP in arrivo e applicare diversi middleware in base alle esigenze, come l'autenticazione JWT, la validazione dei dati in ingresso e altri controlli.
+
+# Data Access Object (DAO)
+Il Data Access Object (DAO) è stato utilizzato per separare la logica di accesso ai dati dal resto dell'applicazione. Sono stati creati DAO per le entità del database, consentendo così un'astrazione completa dell'accesso ai dati. Questo design pattern facilita la manutenzione e la gestione del codice relativo al database.
 
 
 
