@@ -70,12 +70,109 @@ Tabella di implementazioni di rotte non richieste, comode per la generazione del
 | GET             | /login/:user                   | NO        |
 | GET             | /test                          | SI        |
 
+### Creare ed inserire un nuovo alimento nello store
+Tramite questa richiesta è possibile inserire un nuovo alimento nel magazino, se l'alimento è gia presente viene incrementato il quantitativo.
+~~~
+http://localhost:8080/store/create
+~~~
+Esempio del body, da effettura tramite JWT:
+~~~
+
+{
+    "food" : "pomodori",
+    "quantity" : 12
+}
+~~~
+
+### Creare un nuovo ordine
+Tramite questa richiesta è possibile creare un nuovo ordine con relativa sequenza di alimenti e quantità.
+~~~
+http://localhost:8080/order/create
+~~~
+Esempio del body, da effettuare tramite JWT:
+~~~
+
+{
+  "requestOrder": [
+    { 
+        "food": "pomodori", 
+        "quantity": 2 },
+    { 
+        "food": "cipolle", 
+        "quantity": 5 
+        }
+  ]
+}
 
 
-## IMPLEMENTAZIONE
+~~~
+
+### Processare un ordine
+Tramite questa richiesta è possibile 'prendere in carico' l'ordine, nello specifico lo stato dell'ordine passa da CREATO a IN ESECUZIONE
+
+Questa rotta non richiede nessun body, va passato tramite Query params l'id dell'ordine
+Esempio della rotta, da effettuare tramite JWT:
+~~~
+http://localhost:8080/order/start/f739d800-bc7e-473f-87bc-f89d33d47712
+~~~
+
+
+### Caricare gli alimenti per il relativo ordine
+Tramite questa richiesta è possibile inserire gli alimenti nell'ordine, questo è possibile se gli alimenti sono presenti, se hanno la quantità richiesta a disposizione e se la sequenza di carico è consona. In tal caso lo stato dell'ordine diventa COMPLETATO, altrimenti passa a FALLITO
+
+~~~
+http://localhost:8080/order/f739d800-bc7e-473f-87bc-f89d33d47712/load
+~~~
+Esempio del body, da effettuare tramite JWT
+~~~
+{
+    "loadOrder" : [{
+        "food": "pomodori", 
+        "quantity": 2 }
+    ,{ 
+        "food" : "cipolle",
+        "quantity" : 5
+        }
+    ]
+    
+}
+~~~
+
+### Mostrare stato dell'ordine
+Questa richiesta consente di visualizzare lo stato completo dell'ordine. Se lo stato dell'ordine è COMPLETATO viene restituita anche la sequenza di carico, il relativo scostamento tra quanto richiesto e quanto caricato e il tempo impiegato tra la creazione dell'ordine e il completamento.
+
+Da effettuare tramite JWT.
+~~~
+http://localhost:8080/order/status/f739d800-bc7e-473f-87bc-f89d33d47712
+~~~
+
+### Ricerca tramite range temporale
+Questa richiesta consente di visualizzare gli ordini presenti nel range temporale.
+
+Esempio di body, non è richiesto il JWT.
+~~~
+{
+  "start": "2023-09-01",
+  "end": "2023-09-15"
+}
+~~~
+
+### Incremento dei token utente
+Questa rotta permette di aumentare il numero di token dell'utente, che consentono di effettuare le varie richieste, questo è possibile farlo solo tramite JWT e ruolo utente 'admin'.
+
+Esempio di body:
+~~~
+{
+    "user" : "op2@mailnator.com",
+    "token" : 5
+}
+~~~
+
+
+## PROGETTAZIONE - UML
 
 ## Casi d'uso 
-    Le funzionalità implementate si dividono in 2 Gruppi
+    Le funzionalità implementate si dividono in 3 Gruppi
     • Funzioni utente
         • Inserisci alimento nello store.
         • Crea e inserisci nuovo ordine.
@@ -89,3 +186,6 @@ Tabella di implementazioni di rotte non richieste, comode per la generazione del
        
 
 ![Casi d'uso](/Images/UseCase.png)
+
+
+
