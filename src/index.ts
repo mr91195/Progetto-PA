@@ -23,6 +23,8 @@ import * as controlStore from './service/store.controller';
 import * as controlOrder from './service/order.controller';
 import * as mdlUser from './middleware/user.middleware';
 import * as mdlOrder from './middleware/store-order.middleware';
+require('dotenv').config
+
 const orderDAO = new OrderDAO();
 const storeDAO = new StoreDAO();
 const userApp = new UserDAO();
@@ -35,9 +37,20 @@ app.use(express.json());
 
 
 
-// Crea ALIMENTO
+/**
+ * Crea un nuovo alimento nello store.
+ * 
+ * @function
+ * @name POST /store/create
+ * @middleware jwtAuth - Verifica l'autenticazione JWT dell'utente.
+ * @middleware mdlUser.checkUserTokenAmount - Controlla il quantitativo di token dell'utente.
+ * @middleware mdlSchema.validateCreateStore - Valida lo schema json per la creazione dell'oggetto .
+ */
 app.post('/store/create', 
-  [jwtAuth, mdlUser.checkUserTokenAmount, mdlSchema.validateCreateStore], 
+  [
+    jwtAuth, 
+    mdlUser.checkUserTokenAmount, 
+    mdlSchema.validateCreateStore], 
   async (req: any, res: any) => {
 
     await controlStore.createFood(req, res);
@@ -45,8 +58,17 @@ app.post('/store/create',
 
 });
 
-
-// CREA ORDINE
+/**
+ * Crea un nuovo ordine.
+ * 
+ * @function
+ * @name POST /order/create
+ * @middleware jwtAuth - Verifica l'autenticazione JWT dell'utente. 
+ * @middleware mdlUser.checkUserTokenAmount - Controlla il quantitativo di token dell'utente.
+ * @middleware mdlSchema.validateCreateOrder - Valida lo schema json per la creazione dell'ordine.
+ * @middleware mdlOrder.checkFood - Controlla se gli alimenti sono presenti nello store.
+ * @middleware mdlOrder.checkQuantity - Controlla se la quantità degli alimenti è presente nello store.
+ */
 app.post('/order/create', 
   [
     jwtAuth, 
@@ -61,57 +83,92 @@ app.post('/order/create',
 
 });
 
-// 1
-// PRESO IN CARICO -> IN ESECUZIONE
-  
+/**
+ * Inizia l'esecuzione di un ordine.
+ * 
+ * @function
+ * @name PUT /order/start/:uuid
+ * @middleware jwtAuth - Verifica l'autenticazione JWT dell'utente.
+ * @middleware mdlUser.checkUserTokenAmount - Controlla la quantità di token dell'utente.
+ * @middleware mdlOrder.checkOrder - Controlla se l'ordine esiste.
+ */
 app.put('/order/start/:uuid',
-  [jwtAuth, mdlUser.checkUserTokenAmount, mdlOrder.checkOrder], 
+  [
+    jwtAuth, 
+    mdlUser.checkUserTokenAmount, 
+    mdlOrder.checkOrder
+  ], 
   async (req: any, res: any, next: any) => {
   await controlOrder.orderStart(req, res, next);
   await userApp.decrementToken(req.user.email);
 });
 
 
-
-
-// 2
-// CARICAMENTO ORDINE 
-//RISPETTARE SEQUENZA DI CARICO
-// QUANTITA DA CARICARE DISCSTA DI UNA PERCENTUALE CON LA RICHIESTA
-// ALLORA IMPOSTA STATO IN -> COMPLETATO
-//await controlOrder.consumeStore(req, res); //QUESTA VA INSERITA QUANDO VA FATTO IL CARICO DELL'ORDINE!!
+/**
+ * Route per il caricamento di un ordine.
+ * 
+ * @route POST /order/:uuid/load
+ * @group Order - Gestione degli ordini
+ * @param {string} uuid - L'UUID dell'ordine da caricare.
+ * @security JWT
+ */
 app.post('/order/:uuid/load',
-  [jwtAuth, 
-    mdlUser.checkUserTokenAmount,
-    mdlOrder.checkOrder,
-    mdlOrder.checkState,
-    mdlSchema.validateLoadOrder,
-    mdlOrder.checkLoad,                       //IMPLEMENTARE LO STATO DI FALLITO
-    mdlOrder.checkQuantityLoad,
-    mdlOrder.checkSequence
-    ],
-  async (req:any, res: any) => {
+  [
+    jwtAuth, // Middleware per l'autenticazione JWT
+    mdlUser.checkUserTokenAmount, // Middleware per verificare i token dell'utente
+    mdlOrder.checkOrder, // Middleware per verificare l'esistenza dell'ordine
+    mdlOrder.checkState, // Middleware per verificare lo stato dell'ordine
+    mdlSchema.validateLoadOrder, // Middleware per validare il json di caricamento
+    mdlOrder.checkLoad, // Middleware per verificare se l'alimento è presente.
+    mdlOrder.checkQuantityLoad, // Middleware per verificare se la quantità è presente.
+    mdlOrder.checkSequence // Middleware per verificare la sequenza di caricamento
+  ],
+  async (req: any, res: any) => {
+    // Esegue la funzione per il caricamento dell'ordine
     await controlOrder.consumeStore(req, res);
+    
+    // Cambia lo stato dell'ordine in "Completato"
     orderDAO.changeStatus(StatusOrder.Completato, req.params.uuid);
+    
+    // Decrementa i token dell'utente che ha effettuato l'ordine
     await userApp.decrementToken(req.user.email);
-
   }
-
 );
-// 3
-//MOSTRA STATO DELL'ORDINE 
-app.get('/order/status/:uuid', jwtAuth,async (req:any, res:any) => {
-    controlOrder.getOrder(req, res);
-})
-
-// 4
-// ROTTA LIBERA
-app.post('/order/search/range', mdlSchema.validateRangeData ,async (req:any , res:any) => {
-    await controlOrder.searchRange(req, res);
-})
 
 
-app.put('/tokenUpdate', [jwtAuth, mdlUser.checkAdminRole, mdlSchema.validateTokenUpdate],async (req:any, res:any) => {
+/**
+ * Mostra lo stato dell'ordine corrispondente all'UUID specificato.
+ * @param {string} uuid - UUID dell'ordine
+ */
+app.get('/order/status/:uuid', 
+  jwtAuth, // Middleware per l'autenticazione JWT
+  async (req: any, res: any) => {
+  controlOrder.getOrder(req, res);
+});
+
+
+
+/**
+ * Rotta libera, senza autenticazione mediante JWT per la ricerca dell'ordine in base a un intervallo di date.
+ */
+app.post('/order/search/range', 
+  mdlSchema.validateRangeData, // middleware per la convalida del json schema
+  async (req: any, res: any) => {
+  await controlOrder.searchRange(req, res);
+});
+
+
+/**
+ * Rotta per l'aggiornamento del token utente.
+ */
+
+app.put('/tokenUpdate', 
+  [
+    jwtAuth, //middleware per il JWT
+    mdlUser.checkAdminRole, //middleware per il ruolo di admin
+    mdlSchema.validateTokenUpdate   //middleware per la validazione del json schema
+  ],
+  async (req:any, res:any) => {
 
   let user: string = req.body.user;
   let token: number = parseInt(req.body.token);
@@ -130,9 +187,9 @@ app.put('/tokenUpdate', [jwtAuth, mdlUser.checkAdminRole, mdlSchema.validateToke
 
 
 
-
-// ROTTA PER GENERARE IL TOKEN JWT
-
+/**
+ * Rotta per generare il token JWT per l'utente specificato.
+ */
 app.get('/login/:user', (req: any, res:any) => {
   let user = req.params.user;
   userApp.retrieveByEmail(user)
@@ -147,6 +204,14 @@ app.get('/login/:user', (req: any, res:any) => {
 });
 
 
+
+
+// ROTTA PER VERIFICA DEL TOKENJWT
+
+app.get('/test', jwtAuth ,(req: any, res:any) => {
+
+  res.send({"ROTTA": "Autenticazione effettuata correttamente","user" : req.user});
+}); 
 
 
 
@@ -165,6 +230,8 @@ app.get('/login/:user', (req: any, res:any) => {
 
 */
 
+/*
+
 app.get('/usersAll', (req: any, res:any) => {
   userApp.retrieveAll()
   .then((userDaoAll) => {
@@ -178,14 +245,6 @@ app.get('/usersAll', (req: any, res:any) => {
 });
 
 
-
-
-// ROTTA PER VERIFICA DEL TOKENJWT
-
-app.get('/test', jwtAuth ,(req: any, res:any) => {
-
-  res.send({"ROTTA": "Autenticazione effettuata correttamente","user" : req.user});
-}); 
 
 
 
@@ -234,11 +293,23 @@ app.post('/userNew', (req: any, res: any) => {
   });
   
 
+
+  */
+
+
+
+
+
 /*
 
   USARE PARSEINT senno esce tutto sbagliato
 
 */
+
+
+
+
+/*
 // Rotta per aggiornare il token di un utente
 app.put('/upToken', (req: any, res: any) => {
     let email = req.body.email;
@@ -384,7 +455,6 @@ app.post('/order/:uuid/load', async (req: any, res: any)=> {
     });
 } 
 });
-*/
 app.get('/order/load/retrieve', async (req: any, res: any) => {
   orderDAO.retrieveLoadOrder()
   .then((loadOrder) => {
@@ -397,25 +467,21 @@ app.get('/order/load/retrieve', async (req: any, res: any) => {
   });
 })
 
+*/
 
 
 
+// Gestore di rotte catch-all per tutte le richieste
+app.all("*", (req: any, res: any) => {
+  res.status(StatusCodes.NOT_IMPLEMENTED).send({'err' : 'rotta non presente!!'});
+});
 
 
+// Constants
+const PORT = process.env.PORT;
+const HOST = process.env.HOST;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.listen(8080, () => console.log(`App server listening on port 8080`));
+app.listen(PORT, HOST);
+console.log(`App server running on http://${HOST}:${PORT}`);
+//app.listen(8080, () => console.log(`App server listening on port 8080`));

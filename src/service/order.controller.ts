@@ -13,6 +13,9 @@ const { format } = require('date-fns');
 const orderDAO = new OrderDAO();
 const storeDAO = new StoreDAO();
 
+/**
+ * Crea un nuovo ordine.
+ */
 export async function createOrder(req: any, res: any) {
     try {
         let storeData = req.body;
@@ -51,13 +54,14 @@ export async function createOrder(req: any, res: any) {
     }
 }
 
-
-
+/**
+ * Avvia l'esecuzione di un ordine.
+ */
 export async function orderStart(req: any, res: any, next: any){
 
     let uuid : string = req.params.uuid;
-    console.log('-------------------------------orderStart----------------------------------------')
-    console.log(uuid);
+    //console.log('-------------------------------orderStart----------------------------------------')
+    //console.log(uuid);
     await orderDAO.changeStatus(StatusOrder.InEsecuzione, uuid)
     .then(() => {
         res.send({'msg' : 'l ordine è stato processato correttamente, stato ordine : IN ESECUZIONE'});
@@ -71,42 +75,49 @@ export async function orderStart(req: any, res: any, next: any){
     });
 }
 
+
+
+
+
+
+/**
+ * Aggiunge zeri iniziali a un numero per renderlo una stringa di almeno due caratteri.
+ * @param num - Il numero da formattare.
+ * @returns Il numero formattato come stringa con almeno due caratteri.
+ */
 function padTo2Digits(num: number) {
     return num.toString().padStart(2, '0');
-  }
-  
-function convertMsToTime(milliseconds: number) {
-let seconds = Math.floor(milliseconds / 1000);
-let minutes = Math.floor(seconds / 60);
-const hours = Math.floor(minutes / 60);
-
-seconds = seconds % 60;
-minutes = minutes % 60;
-
-// 👇️ If you want to roll hours over, e.g. 00 to 24
-// 👇️ uncomment the line below
-// uncommenting next line gets you `00:00:00` instead of `24:00:00`
-// or `12:15:31` instead of `36:15:31`, etc.
-// 👇️ (roll hours over)
-// hours = hours % 24;
-
-return `${padTo2Digits(hours)}:${padTo2Digits(minutes)}:${padTo2Digits(
-    seconds,
-)}`;
 }
-/*
-    uuid UUID NOT NULL,
-    foodIndex INTEGER NOT NULL,
-    food VARCHAR(255) NOT NULL,
-    quantity INTEGER NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    deviation INTEGER NOT NULL*/
+
+/**
+ * Converte i millisecondi in un formato orario HH:MM:SS.
+ * @param milliseconds - I millisecondi da convertire.
+ * @returns Il tempo in formato HH:MM:SS.
+ */
+function convertMsToTime(milliseconds: number) {
+    let seconds = Math.floor(milliseconds / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+
+    seconds = seconds % 60;
+    minutes = minutes % 60;
+
+    // Se vuoi che le ore siano in formato 00-24, puoi decommentare la riga successiva
+    hours = hours % 24;
+
+    return `${padTo2Digits(hours)}:${padTo2Digits(minutes)}:${padTo2Digits(seconds)}`;
+}
+
+
+/**
+ * Gestisce il caricamento di alimenti da un ordine.
+ */
 export async function consumeStore(req: any, res: any){
     let storeData = req.body.loadOrder;
     let uuid = req.params.uuid;
     const numberOfElements = Object.keys(storeData).length;
     if (numberOfElements == 1){
-        let isSingleElement: boolean = true;
+        //let isSingleElement: boolean = true;
         let item = storeData[0];
         let order = await orderDAO.retrieveById(uuid);
         if(order){
@@ -114,6 +125,7 @@ export async function consumeStore(req: any, res: any){
             let tmp: number = new Date().getTime() - new Date(order.created_at).getTime();
             let timestamp: string = convertMsToTime(tmp);
             let food : string = item.food;
+            food = food.toLowerCase();
             let quantity: number = parseInt(item.quantity.toString());
             let rqsQnt: number = parseInt(request.quantity.toString());
             let deviation: number = rqsQnt - quantity;
@@ -143,6 +155,7 @@ export async function consumeStore(req: any, res: any){
                 let tmp: number = new Date().getTime() - new Date(order.created_at).getTime();
                 let timestamp: string = convertMsToTime(tmp);
                 let food : string = items.food;
+                food = food.toLowerCase();
                 let quantity: number = parseInt(items.quantity.toString());
                 let rqsQnt: number = parseInt(request.quantity.toString());
                 let deviation: number = rqsQnt - quantity;
@@ -163,9 +176,21 @@ export async function consumeStore(req: any, res: any){
             .status(StatusCodes.INTERNAL_SERVER_ERROR)
             .send({'err' : 'Problema nel caricamento degli alimenti'});
         }
-}};
+    }
+}
 
 
+
+
+
+
+
+
+
+
+/**
+ * Ricerca ordini in un intervallo di date.
+ */
 export async function searchRange(req:any, res: any) {
     let startDate: string = req.body.start;
     let endDate: string = req.body.end;
@@ -187,95 +212,62 @@ export async function searchRange(req:any, res: any) {
     })
 }
 
-export async function getOrder(req:any, res: any) {
+
+/**
+ * Recupera i dettagli di un ordine e i dettagli relativi al caricamento degli alimenti.
+ * Formatta il tutto per una visualizzazione generica dello stato dell'ordine.
+ */
+export async function getOrder(req: any, res: any) {
     try {
         let uuid: string = req.params.uuid;
 
+        // Recupera i dettagli dell'ordine dal database.
         let order = await orderDAO.retrieveById(uuid);
+
+        // Recupera i dettagli relativi al caricamento degli alimenti.
         let load = await orderDAO.retrieveLoadOrderByUuid(uuid);
+
+        // Definizione dell'interfaccia per rappresentare un elemento di deviazione.
         interface Ideviation {
             food: string;
             deviation: number;
-          }
+        }
           
         let timestamp: string = "";
         let sequence: any = []
+
+        // Mappa gli elementi di caricamento per creare una sequenza di deviazioni.
         load.map((items) =>{
+            let food: string = items.food;
+            food = food.toLowerCase();
             let item: Ideviation = {
-                food: items.food,
+                food: food,
                 deviation: items.deviation
             }
             timestamp = items.timestamp;
             sequence.push(item);
         } )
 
-
+        // Converti la data dell'ordine in un formato desiderato.
         const dateObject = new Date(order.created_at);
-
-        // Formatta la data 
         const formattedDate = format(dateObject, "yyyy-MM-dd HH:mm:ss");
-
-        //console.log(formattedDate);
-
         
-        // Formatto la risposta come desiderato.
+        // Crea una risposta JSON formattata con i dettagli dell'ordine.
         const responseJson = {
-          orderId: req.params.uuid,
-          status: order.status,
-          order_create_at : formattedDate,
-          order_create_by : order.created_by,
-          sequence: sequence,
-          processingTime: timestamp,
-          message: "Stato dell'ordine recuperato con successo.",
+            orderId: req.params.uuid,
+            status: order.status,
+            order_create_at : formattedDate,
+            order_create_by : order.created_by,
+            sequence: sequence,
+            processingTime: timestamp,
+            message: "Stato dell'ordine recuperato con successo.",
         };
-    
+
         // Invia la risposta al client.
         res.status(200).send(responseJson);
-      } catch (error) {
+    } catch (error) {
         // Gestisci gli errori in caso di problemi nella richiesta.
         console.error("Errore durante la richiesta dello stato dell'ordine:", error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ error: "Si è verificato un errore durante la richiesta dello stato dell'ordine." });
-      }
+    }
 }
-/*
-export async function consumeStore(req: any, res: any){
-    let item = req.body.requestOrder;
-    let uuid: string = req.params.uuid;
-
-    const numberOfElements = Object.keys(item).length;
-    if(numberOfElements == 1){
-            
-        item = item[0];
-        let qnt = parseInt(item.quantity);
-        console.log('------------------------------------------------------consume-------------------------------------------------')
-        console.log(-qnt)
-        console.log(typeof(qnt))
-        await orderDAO.loadOrder(uuid, item, true);
-        await storeDAO.update(item.food, -qnt)
-            .then(() => {
-                res.send('order create')
-                
-            })
-            .catch((error) => {
-                res
-                .status(StatusCodes.INTERNAL_SERVER_ERROR)
-                .send({ 'err': error});
-            });
-
-    }else{
-        item.map(async (items: any) => {
-            let qnt = parseInt(items.quantity);
-
-            await storeDAO.update(items.food, -qnt)
-            .then(() => {
-                res.send('order create')
-            //res.send(store);
-            })
-            .catch((error) => {
-                res
-                .status(StatusCodes.INTERNAL_SERVER_ERROR)
-                .send({ 'err': error});
-            });
-        })
-    }    
-}*/

@@ -9,7 +9,9 @@ import {
 
 const userApp = new UserDAO();
 
-//CONTROLLO SE UTENTE DI RUOLO 0 (UTENTE SEMPLICE)
+/**
+ * Middleware per il controllo del ruolo dell'utente come utente semplice .
+ */
 export async function checkUserRole(req:any, res:any, next:any){
     if(req.user.role==UserRole.User){
         next();
@@ -20,7 +22,9 @@ export async function checkUserRole(req:any, res:any, next:any){
     }
 }
 
-//CONTROLLO SE UTENTE È DI RUOLO 1 (ADMIN)
+/**
+ * Middleware per il controllo del ruolo dell'utente come amministratore (ruolo ADMIN).
+ */
 export async function checkAdminRole(req:any, res:any, next:any){
     if(req.user.role==UserRole.Admin){
         next();
@@ -33,8 +37,9 @@ export async function checkAdminRole(req:any, res:any, next:any){
 
 
 
-
-//CONTROLLE QUANTITÀ TOKEN ASSOCIATI ALL'UTENTE
+/**
+ * Middleware per il controllo della quantità di token associata all'utente.
+ */
 export async function checkUserTokenAmount(req:any, res:any, next:any){
     try{
         const result= await userApp.retrieveByEmail(req.user.email)

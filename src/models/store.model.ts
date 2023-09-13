@@ -1,10 +1,11 @@
 import { Sequelize, Model, DataTypes, HasManyGetAssociationsMixin, InferAttributes, InferCreationAttributes } from 'sequelize';
 import { ConnectionDB } from '../postgres/connectionDB';
 
+// Ottieni un'istanza di Sequelize dalla connessione al database.
 const sequelize: Sequelize = ConnectionDB.getDB().getConnection();
 
-// Modello per il magazzino
-export class Store extends  Model<InferAttributes<Store>, InferCreationAttributes<Store>> {
+// Modello per il magazzino.
+export class Store extends Model<InferAttributes<Store>, InferCreationAttributes<Store>> {
   declare id?: number;
   declare food: string;
   declare quantity: number;

@@ -1,8 +1,10 @@
 import { Sequelize, Model, DataTypes, Op, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import { ConnectionDB } from '../postgres/connectionDB';
 
+// Ottieni un'istanza di Sequelize dalla connessione al database.
 const sequelize: Sequelize = ConnectionDB.getDB().getConnection();
 
+// Enumerazione per rappresentare lo stato dell'ordine.
 export enum StatusOrder {
   Creato = 'creato',
   Completato = 'completato',
@@ -10,14 +12,14 @@ export enum StatusOrder {
   Fallito = 'fallito'
 }
 
-
+// Interfaccia per rappresentare un oggetto di richiesta JSON.
 export interface JsonRequest {
   foodIndex: number;
   food: string;
   quantity: number;
 }
 
-
+// Modello per rappresentare un ordine.
 export class Order extends Model<InferAttributes<Order>, InferCreationAttributes<Order>> {
   declare uuid: string;
   declare request_order: JsonRequest[];
@@ -50,6 +52,7 @@ Order.init({
 
 }, { sequelize, tableName: 'orders' });
 
+// Modello per rappresentare un ordine di carico.
 export class loadOrder extends Model{
   declare uuid: string;
   declare food: string;
@@ -80,4 +83,3 @@ loadOrder.init({
     allowNull: false,
   }
 }, {sequelize, tableName: 'load_order'});
-

@@ -1,18 +1,58 @@
 import { User } from "models/users.model";
 
-
 // Interfaccia per le operazioni CRUD su User
 interface IUserDAO {
-    create(user: User): Promise<void>;
-    retrieveAll(): Promise<User[]>;
-    retrieveByEmail(email: string): Promise<User>;
-    updateToken(email: string, tokenAdd: number): Promise<void>;
-    decrementToken(email: string): Promise<void>;
-    delete(email: string): Promise<void>;
-  }
-  
+  /**
+   * Crea un nuovo utente.
+   *
+   * @param {User} user - L'oggetto User da creare.
+   */
+  create(user: User): Promise<void>;
+
+  /**
+   * Recupera tutti gli utenti presenti nel sistema.
+   *
+   * @returns {Promise<User[]>} - Un array di oggetti User.
+   */
+  retrieveAll(): Promise<User[]>;
+
+  /**
+   * Recupera un utente basato sull'indirizzo email specificato.
+   *
+   * @param {string} email - L'indirizzo email dell'utente da recuperare.
+   * @returns {Promise<User>} - L'oggetto User corrispondente all'indirizzo email specificato.
+   */
+  retrieveByEmail(email: string): Promise<User>;
+
+  /**
+   * Aggiorna il token di un utente specifico.
+   *
+   * @param {string} email - L'indirizzo email dell'utente da aggiornare.
+   * @param {number} tokenAdd - La quantità da aggiungere al token dell'utente.
+   * @returns {Promise<void>}
+   */
+  updateToken(email: string, tokenAdd: number): Promise<void>;
+
+  /**
+   * Decrementa il token di un utente specifico.
+   *
+   * @param {string} email - L'indirizzo email dell'utente da cui decrementare il token.
+   */
+  decrementToken(email: string): Promise<void>;
+
+  /**
+   * Elimina un utente dal sistema basato sull'indirizzo email specificato.
+   *
+   * @param {string} email - L'indirizzo email dell'utente da eliminare.
+   */
+  delete(email: string): Promise<void>;
+}
+
+
+
 // Classe DAO per gestire le operazioni su User
 export class UserDAO implements IUserDAO {
+    //implementazione dell'interfaccia
 
   async create(user: User): Promise<void> {
     return user.save()

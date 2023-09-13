@@ -3,19 +3,18 @@ const { Op } = require('sequelize');
 const moment = require('moment');
 const { v4: uuidv4 } = require('uuid');
 
-
-// Interfaccia per le operazioni CRUD su User
+// Interfaccia per le operazioni CRUD su Order
 interface IOrderDAO {
-    create(orders: any, user: string, singleElement: boolean): Promise<void>;
-    retrieveAll(): Promise<Order[]>;
-    retrieveById(id: string): Promise<Order>;
-    retrieveByRange(startDate: string, endDate: string): Promise<Order[]>;
-    loadOrder(uuid: string, timestamp: string, food: string, quantity: number, deviation: number): Promise<void>;
-    retrieveLoadOrder(): Promise<loadOrder[]>;
-    retrieveLoadOrderByUuid(uuid: string): Promise<loadOrder[]>;
-    changeStatus(status: StatusOrder, uuid: string):Promise<void>;
-    isExists(uuid: string): Promise<boolean>;
-  }
+  create(orders: any, user: string, singleElement: boolean): Promise<void>; // Crea un nuovo ordine
+  retrieveAll(): Promise<Order[]>; // Recupera tutti gli ordini
+  retrieveById(id: string): Promise<Order>; // Recupera un ordine per ID
+  retrieveByRange(startDate: string, endDate: string): Promise<Order[]>; // Recupera gli ordini in un determinato intervallo di date
+  loadOrder(uuid: string, timestamp: string, food: string, quantity: number, deviation: number): Promise<void>; // Carica un ordine
+  retrieveLoadOrder(): Promise<loadOrder[]>; // Recupera tutti gli ordini caricati
+  retrieveLoadOrderByUuid(uuid: string): Promise<loadOrder[]>; // Recupera gli ordini caricati per UUID
+  changeStatus(status: StatusOrder, uuid: string): Promise<void>; // Cambia lo stato di un ordine
+  isExists(uuid: string): Promise<boolean>; // Verifica se esiste un ordine per UUID
+}
   
 // Classe DAO per gestire le operazioni su User
 export class OrderDAO implements IOrderDAO {

@@ -1,23 +1,28 @@
+// Importa le classi DAO e i moduli necessari.
 import { StoreDAO } from "dao/store.dao";
-import { parseJsonText } from "typescript";
+import { OrderDAO } from "dao/orders.dao";
+import { StatusOrder } from "models/orders.model";
 import {
 	ReasonPhrases,
 	StatusCodes,
 	getReasonPhrase,
 	getStatusCode,
 } from 'http-status-codes';
-import { OrderDAO } from "dao/orders.dao";
-import { StatusOrder, loadOrder } from "models/orders.model";
-require('dotenv').config
+require('dotenv').config;
 
+// Crea istanze delle classi DAO.
 const orderDAO = new OrderDAO();
 const storeDAO = new StoreDAO();
 
 
+/**
+ * Funzione che modifica l'ordine in FALLITO.
+ * @param {string} uuid - UUID dell'ordine fallito.
+ */
 async function orderFailed(uuid: string){
 
-    console.log('-------------------------------orderStart----------------------------------------')
-    console.log(uuid);
+    //console.log('-------------------------------orderStart----------------------------------------')
+    //console.log(uuid);
     await orderDAO.changeStatus(StatusOrder.Fallito, uuid)
     .then(() => {
     })
@@ -27,7 +32,9 @@ async function orderFailed(uuid: string){
     });
 }
 
-
+/**
+ * Middleware per la validazione dei prodotti, controllando se siano presenti nello store.
+ */
 export async function checkFood(req: any, res: any, next: any){
 
     let item = req.body.requestOrder;
@@ -81,6 +88,9 @@ export async function checkFood(req: any, res: any, next: any){
     }
 }
 
+/**
+ * Middleware per la conferma dell'esistenza dell'ordine.
+ */
 export async function checkOrder(req:any, res: any, next: any){
     let uuid: string = req.params.uuid;
     await orderDAO.isExists(uuid)
@@ -97,6 +107,9 @@ export async function checkOrder(req:any, res: any, next: any){
     })
 }
 
+/**
+ * Middleware per la validazione della quantità degli alimenti nell'ordine.
+ */
 export async function checkQuantity(req: any, res: any, next: any){
 
     let item = req.body.requestOrder;
@@ -153,11 +166,21 @@ export async function checkQuantity(req: any, res: any, next: any){
 
     }    
 }
+
+
+
+
 interface arraySequence {
     quantity: number;
     food: string;
   }
-
+/**
+ * Funzione per verificare se due array di oggetti (la sequenza di carico e la sequenza dell'ordine richiesto) sono uguali entro una percentuale massima.
+ * @param {arraySequence[]} arr1 - Primo array da confrontare.
+ * @param {arraySequence[]} arr2 - Secondo array da confrontare.
+ * @param {number} percentualeMassima - Percentuale massima di scostamento ammessa.
+ * @returns {boolean} - True se gli array sono uguali, altrimenti False.
+ */
 function isEquals(
     arr1: arraySequence[],
     arr2: arraySequence[],
@@ -175,7 +198,9 @@ function isEquals(
         }).every((sonoUguali) => sonoUguali);
 }
 
-
+/**
+ * Middleware per la validazione della sequenza di caricamento dell'ordine.
+ */
 export async function checkSequence(req: any, res: any, next: any){
     let storeData = req.body.loadOrder;
     let uuid = req.params.uuid;
@@ -235,16 +260,14 @@ export async function checkSequence(req: any, res: any, next: any){
                     .send({'err' : 'Spiacenti il carico non rispetta la quantità richiesta'});
                 }
             }
-
-/*
+            /*
             console.log('----------------------------------------jsonorder----------------------------------')
             console.log(jsonOrder);
             console.log('----------------------------------------jsonload----------------------------------')
             console.log(jsonLoad)
             */
         }
-    }
-    else{
+    }else{
         let order = await orderDAO.retrieveById(uuid);
         
         let arrayOrder: arraySequence[] = [];
@@ -278,13 +301,15 @@ export async function checkSequence(req: any, res: any, next: any){
             .status(StatusCodes.EXPECTATION_FAILED)
             .send({'err' : 'Spiacenti il carico non rispetta la richiesta'});
         }
-        console.log(sonoUguali); // Restituirà false a causa dello scostamento percentuale
-        
+        console.log(sonoUguali); 
     }
 }
 
 
 
+/**
+ * Middleware per verificare se gli alimenti richiesti siano presenti.
+ */
 export async function checkLoad(req: any, res: any, next: any){
 
     let item = req.body.loadOrder;
@@ -348,7 +373,9 @@ export async function checkLoad(req: any, res: any, next: any){
     }
 }
 
-
+/**
+ * Middleware per la validazione della quantità di alimenti caricati nell'ordine.
+ */
 export async function checkQuantityLoad(req: any, res: any, next: any){
 
     let item = req.body.loadOrder;
@@ -402,6 +429,9 @@ export async function checkQuantityLoad(req: any, res: any, next: any){
     }    
 }
 
+/**
+ * Middleware per la validazione dello stato dell'ordine, solo se lo stato è IN ESECUZIONE procede.
+ */
 export async function checkState(req:any, res: any, next: any) {
     let uuid = req.params.uuid;
     let order = await orderDAO.retrieveById(uuid);

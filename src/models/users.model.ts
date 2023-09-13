@@ -1,16 +1,17 @@
 import { Sequelize, Model, DataTypes, Op, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import { ConnectionDB } from '../postgres/connectionDB';
 
+// Ottieni un'istanza di Sequelize dalla connessione al database.
 const sequelize: Sequelize = ConnectionDB.getDB().getConnection();
 
-
-// Definisco un enum per le tipologie di ruolo
+// Definisco un enum per le tipologie di ruolo.
 export enum UserRole {
   User = 'user',
   Admin = 'admin'
 }
 
-export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>>{
+// Modello per l'entità utente.
+export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare username: string;
   declare email: string;
   declare token: number;
@@ -35,8 +36,7 @@ User.init({
     allowNull: false
   },
   role: {
-    type: DataTypes.ENUM(UserRole.User, UserRole.Admin), // Usa l'enum per definire i valori consentiti
+    type: DataTypes.ENUM(UserRole.User, UserRole.Admin), // Usa l'enum per definire i valori consentiti.
     allowNull: true
   }
-}, {sequelize, tableName: 'users'});
-
+}, { sequelize, tableName: 'users' });
