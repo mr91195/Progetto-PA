@@ -177,6 +177,10 @@ Esempio di body:
 }
 ~~~
 
+## ROTTE DEV TEST
+Nella cartella di collection_postman sono presenti due sotto cartelle:
+* Collection_dev, è una collection di rotte usate come test di sviluppo, hanno accesso diretto alle CRUD di tutti i modelli presenti. Nel file index.ts queste rotte sono commentate.
+* Progetto_PA, è una collection di rotte esplicitamente richieste per il progetto.
 
 ## PROGETTAZIONE - UML
 
